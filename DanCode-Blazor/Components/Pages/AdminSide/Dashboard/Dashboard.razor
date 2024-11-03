@@ -1,0 +1,370 @@
+﻿@page "/AdminSide/Dashboard"
+@using DanCode_Blazor.Components.Layout
+@using DanCode_Blazor.Providers
+@using DanCode_Blazor.Services.Base.interfaces
+@using global::Services.Base.interfaces
+@layout AdminPanelLayout;
+
+
+
+
+
+
+<AuthorizeView>
+
+    <Authorized>
+
+
+        @if (IsWait)
+        {
+            <DanCode_Blazor.Components.Pages.Utilites.LoadingSpinner></DanCode_Blazor.Components.Pages.Utilites.LoadingSpinner>
+        }
+        else
+        {
+
+            @if (IsAdmin)
+            {
+
+
+
+                <div class="container-fluid p-4">
+                    <div class="row mb-4 text-center">
+                        <div class="col">
+                            <h1 class="display-4">Admin Dashboard</h1>
+                            <p class="lead text-muted">Overview of sales and analytics</p>
+                        </div>
+                    </div>
+
+                    <div class="row text-center">
+
+                        <!-- Card: Sales -->
+                        <div class="col-md-3 mb-4">
+                            <div class="card text-white bg-primary shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">Sales</h5>
+                                    <p class="card-text display-6">@TotalSalesCount</p>
+                                    <i class="fas fa-dollar-sign fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card:  Sales sum -->
+                        <div class="col-md-3 mb-4">
+                            <div class="card text-white bg-success shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">Sales Sum</h5>
+                                    <p class="card-text display-6">@TotalSalesSum</p>
+
+                                    <i class="fas fa-dollar-sign fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- Card: Courses -->
+                        <div class="col-md-3 mb-4">
+                            <div class="card text-white bg-warning shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">Courses</h5>
+                                    <p class="card-text display-6">@CourseCount</p>
+                                    <i class="bi bi-book fs-2"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card: Products -->
+                        <div class="col-md-3 mb-4">
+                            <div class="card text-white bg-warning shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">Products</h5>
+                                    <p class="card-text display-6">@ProductsCount</p>
+                                    <i class="bi bi-box-seam fs-2"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card: Drills -->
+                        <div class="col-md-3 mb-4">
+
+                            <div class="card text-white bg-danger shadow-sm">
+
+                                <div class="card-body">
+
+                                    <h5 class="card-title">Drills</h5>
+                                    <p class="card-text display-6">@DrillsCount</p>
+                                    <i class="fas fa-futbol fa-2x"></i>
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Card: Users -->
+                        <div class="col-md-3 mb-4">
+                            <div class="card text-white bg-danger shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">Users</h5>
+                                    <p class="card-text display-6">@UsersCount</p>
+                                    <i class="fas fa-users fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                    </div>
+
+                    <div class="row">
+                        <!-- Placeholder for Sales Chart -->
+                        <div class="col-md-8 mb-4">
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-transparent">
+                                    <h5 class="card-title mb-0">Sales Analytics</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-placeholder text-center p-5">
+                                        <h6>Chart Placeholder</h6>
+                                        <div style="height: 200px; background: linear-gradient(90deg, rgba(54, 162, 235, 0.2) 0%, rgba(75, 192, 192, 0.2) 100%); border-radius: 10px;">
+                                            <!-- This is where a chart would be rendered if JavaScript was used -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Orders -->
+                        <div class="col-md-4 mb-4">
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-transparent">
+                                    <h5 class="card-title mb-0">Recent Orders</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+
+                                        @foreach (var item in OrderDTOs)
+                                        {
+                                            <li @onclick="(()=>GotoOrder(item.Id))" class="list-group-item">Order @item.Id - @item.Sum - @item.CreateTime</li>
+                                        }
+                                        
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Additional Widgets or Tables -->
+                        <div class="col-md-12 mb-4">
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-transparent">
+                                    <h5 class="card-title mb-0">Additional Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Add more charts, tables, or other data here -->
+                                    <p>More detailed information can be displayed here...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            }
+            else
+            {
+                <div class="alert alert-danger modified m-5" role="alert">
+
+                    <h3>You Are Not Admin</h3>
+
+                </div>
+
+            }
+
+        }
+
+    </Authorized>
+
+    <NotAuthorized>
+
+        <div class="alert alert-danger modified m-5" role="alert">
+
+            <h3>You Are Not Authorized</h3>
+
+        </div>
+
+    </NotAuthorized>
+
+</AuthorizeView>
+
+
+@code {
+
+
+    [Inject] IUserService UserService { get; set; }
+    [Inject] IOrderService OrderService { get; set; }
+    [Inject] IClient httpclient { get; set; }
+    [Inject] ApiAuthenticationStateProvider apiAuthenticationStateProvider { get; set; }
+    [Inject] NavigationManager Navmanger { get; set; }
+
+    private bool IsAdmin = false;
+    private bool IsWait = false;
+
+
+    //Total Sales
+    private TotalSalesDTO TotalSales { get; set; }
+    private int TotalSalesCount { get; set; }
+    private int TotalSalesSum { get; set; }
+
+    //Products
+    private int ProductsCount;
+
+    //Courses
+    private int CourseCount;
+
+    //Users
+    private int UsersCount;
+
+    //Drills
+    private int DrillsCount;
+
+
+    //Last 5 Orders
+    private ICollection<OrderDTO> OrderDTOs { get; set; }
+
+
+    private string userid;
+    protected override async Task OnInitializedAsync()
+    {
+        IsWait = true;
+
+        try
+        {
+            AuthenticationState Authstate = await apiAuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = Authstate.User;
+
+            if (user.Identity.IsAuthenticated)
+            {
+                userid = user.Claims.FirstOrDefault(c => c.Type == "nameid")?.Value;
+                var FirstName = user.Claims.FirstOrDefault(c => c.Type == "name")?.Value;
+                var LastName = user.Claims.FirstOrDefault(c => c.Type == "family_name")?.Value;
+                var PhoneNumber = user.FindFirst(c => c.Type == "sub")?.Value;
+
+
+            }
+
+            #region IsAdmin
+
+            var response = await UserService.IsAdmin(Convert.ToInt32(userid));
+            IsAdmin = response.Data;
+
+            #endregion
+
+            #region Orders
+
+            var response1 = await OrderService.GetTotlaSales();
+
+            TotalSales = response1.Data;
+
+            TotalSalesCount = TotalSales.Count;
+            TotalSalesSum = TotalSales.Sum;
+
+            #endregion
+
+            #region Products
+
+            var products = await httpclient.GetAllProducutsAsync();
+
+            if (products == null)
+            {
+                ProductsCount = 0;
+            }
+            else
+            {
+                ProductsCount = products.Count;
+            }
+
+
+            #endregion
+
+            #region Courses
+
+            var Courses = await httpclient.GetAllCoursesAsync();
+
+            if (Courses == null)
+            {
+                CourseCount = 0;
+            }
+            else
+            {
+                CourseCount = Courses.Count;
+            }
+
+
+            #endregion
+
+            #region Users
+
+            var response2 = await UserService.GetAllUsers();
+
+            var Users = response2.Data;
+
+            if (Users == null)
+            {
+
+                CourseCount = 0;
+
+            }
+            else
+            {
+
+                UsersCount = Users.Count;
+
+            }
+
+            #endregion
+
+            #region Drills
+            var Drills = await httpclient.GetAllDrillsAsync();
+
+            if (Courses == null)
+            {
+                DrillsCount = 0;
+            }
+            else
+            {
+                DrillsCount = Drills.Count;
+            }
+
+            #endregion
+
+            #region LastFiveOrders
+
+            var response3 = await OrderService.GetLastFiveOrders();
+
+            OrderDTOs = response3.Data;
+
+
+            #endregion
+        }
+        catch
+        {
+
+
+        }
+        finally
+        {
+            IsWait = false;
+
+        }
+
+
+
+    }
+
+
+    private async Task GotoOrder(int OrderId)
+    {
+
+        Navmanger.NavigateTo($"/AdminSide/Orders/{OrderId}");
+
+    }
+}

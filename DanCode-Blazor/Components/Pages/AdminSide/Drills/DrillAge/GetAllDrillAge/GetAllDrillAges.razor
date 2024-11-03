@@ -1,0 +1,230 @@
+﻿@page "/AdminSide/GetAllDrillAges"
+@using DanCode_Blazor.Components.Layout
+@using DanCode_Blazor.Components.Pages.Utilites
+@using DanCode_Blazor.Services.Base.interfaces
+@rendermode InteractiveServer
+@layout AdminPanelLayout;
+
+<style>
+    .divbackground {
+        background-color: #0b6131 !important;
+        color: white;
+    }
+
+    .formbackground {
+        background-color: #F7F9F2 !important;
+    }
+
+    .but {
+        background-color: #0b6131 !important;
+    }
+
+    .table thead th {
+        background-color: #0b6131;
+        color: white;
+        text-align: center;
+    }
+
+    .table tbody td, .table tbody th {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f2f2f2;
+    }
+
+    .btn-custom {
+        margin: 0 2px;
+    }
+
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary {
+        background-color: #0b6131 !important;
+        border: none;
+    }
+
+    .btn-danger {
+        background-color: #ff4d4d !important;
+        border: none;
+    }
+
+        .btn-primary:hover, .btn-danger:hover {
+            opacity: 0.9;
+        }
+</style>
+
+<div class="container mt-4">
+
+
+    <div>
+
+        <h2 class="text-center m-2  p-3 divbackground rounded">Drill Ages</h2>
+        <hr />
+
+        <div class="my-3">
+            <Button @onclick="GoToAddDrillAge" Class="btn btn-primary">Add New</Button>
+        </div>
+
+    </div>
+
+    @if (drillAgeReadonlyDTOs == null)
+    {
+        <LoadingSpinner />
+    }
+
+    else
+    {
+        <div class="card p-4 mb-4">
+
+            <div class="table-responsive border p-2 m-2 rounded">
+
+                <table class="table table-striped table-bordered table-hover">
+
+                    <thead>
+
+                        <tr>
+
+                            <th scope="col">Id</th>
+                            <th scope="col">Age</th>
+                            <th scope="col">Description</th>
+                            <th>Actions</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var item in drillAgeReadonlyDTOs)
+                        {
+                            <tr>
+
+                                <td>@item.Id</td>
+                                <td>@item.Age</td>
+                                <td>@item.Description</td>
+
+                                <td>
+                                    <Button Class="btn btn-danger" @onclick=@(()=>RemoveDrillAge(item.Id))>Delete</Button>
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+
+
+            </div>
+
+
+        </div>
+
+    }
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+@code {
+
+    [Inject] IDrillService drillService { get; set; }
+    [Inject] NavigationManager navmanger { get; set; }
+
+    public ICollection<DrillAgeReadonlyDTO> drillAgeReadonlyDTOs { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await drillService.GetAllDrillAges();
+
+        drillAgeReadonlyDTOs = response.Data;
+
+    }
+
+
+    private async Task RemoveDrillAge(int DrillAgeId)
+    {
+        var Result = await drillService.RemoveDrillAge(DrillAgeId);
+
+        if (Result.Data == false)
+        {
+
+        }
+
+    }
+
+
+    private async Task GoToAddDrillAge()
+    {
+        navmanger.NavigateTo("/AdminSide/AddDrillAge");
+    }
+
+
+
+
+    private async Task GoToAddDrillType()
+    {
+        navmanger.NavigateTo("/AdminSide/AddDrillType");
+    }
+
+    private async Task GoToDrillTypes()
+    {
+        navmanger.NavigateTo($"/AdminSide/GetAllDrillTypes");
+    }
+
+    private async Task GoToDrillAges()
+    {
+        navmanger.NavigateTo($"/AdminSide/GetAllDrillAges");
+    }
+
+
+    private async Task GoToEditDrill(int DrillId)
+    {
+
+        navmanger.NavigateTo($"/navigatetopage/{DrillId}");
+
+    }
+
+
+
+    //Modal
+
+    private TestModal myModal;
+
+    private void ShowModal()
+    {
+        myModal.Open();
+    }
+
+    private void OnModalClose()
+    {
+        // Handle modal close event here
+        Console.WriteLine("Modal closed!");
+    }
+
+    private async void OnModalSave(int DrillId)
+    {
+        await RemoveDrillAge(DrillId);
+    }
+
+
+
+
+
+
+
+}

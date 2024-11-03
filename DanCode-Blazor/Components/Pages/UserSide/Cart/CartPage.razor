@@ -1,0 +1,262 @@
+﻿@page "/cart"
+@using System.Collections.Generic
+@using DanCode_Blazor.Providers
+@using DanCode_Blazor.Services.Base.interfaces
+@using global::Services.Base.interfaces
+
+<PageTitle>سبد خرید | آکادمی فوتبال ایران</PageTitle>
+<title>سبد خرید | آکادمی فوتبال ایران</title>
+
+<style>
+
+
+    .divbackground {
+        background-color: #0b6131 !important;
+        color: white;
+        padding: 10px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .card {
+        border: 1px solid #e0e0e0; /* رنگ حاشیه برای کارت‌ها */
+        border-radius: 12px; /* گردی بیشتر برای گوشه‌ها */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* سایه برای عمق بیشتر */
+        transition: transform 0.2s ease, box-shadow 0.2s ease; /* افکت‌های انتقال */
+    }
+
+        .card:hover {
+            transform: translateY(-4px); /* بالا بردن کارت هنگام هاور */
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* سایه عمیق‌تر هنگام هاور */
+        }
+
+    .card-body {
+        padding: 1.5rem; /* padding بیشتر برای راحتی خواندن */
+    }
+
+    .card-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .text-muted {
+        color: #6c757d;
+    }
+
+    .text-success {
+        color: #28a745;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+        border-radius: 20px; /* گوشه‌های گرد برای دکمه‌ها */
+        padding: 0.5rem 1rem; /* padding مناسب برای دکمه‌ها */
+    }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+        border-radius: 20px; /* گوشه‌های گرد برای دکمه‌ها */
+        padding: 0.5rem 1rem; /* padding مناسب برای دکمه‌ها */
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+</style>
+
+<div class="divbackground mt-3">
+    <h2 class="text-center">
+        <i class="bi bi-cart me-2"></i> سبد خرید شما
+    </h2>
+</div>
+
+
+
+
+
+@if (Iswait)
+{
+
+    <div class="text-center">
+        <DanCode_Blazor.Components.Pages.Utilites.LoadingSpinner></DanCode_Blazor.Components.Pages.Utilites.LoadingSpinner>
+    </div>
+}
+else
+{
+    <div class="container my-4">
+
+        @if (cart == null || cart.OrderDetailDTOs == null || cart.OrderDetailDTOs.Count == 0 || CartItems == null || CartItems.Count == 0)
+        {
+            <div class="alert alert-warning text-center" role="alert">
+                سبد خرید شما خالی است.
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                <!-- بخش محصولات -->
+                <div class="col-lg-8">
+                    @foreach (var item in CartItems)
+                    {
+                        <div class="card mb-3 shadow-lg border-0 rounded">
+                            <div class="card-body d-flex align-items-center">
+                                <!-- بخش توضیحات محصول -->
+                                <div class="flex-grow-1 me-3">
+                                    <h5 class="card-title mb-2 text-dark">@item.Title</h5>
+                                    <p class="text-muted mb-2">@item.ItemType</p>
+                                    <p class="fw-bold text-success mb-0"> @string.Format("{0:n0}", item.Price) تومان</p>
+                                </div>
+
+                                <!-- دکمه حذف -->
+                                <div class="ms-3">
+                                    <button class="btn btn-danger btn-sm" @onclick="() => RemoveFromCart(item.Id)">حذف</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- بخش خلاصه سبد خرید -->
+                <div class="col-lg-4">
+                    <div class="card shadow-lg border-0 rounded">
+                        <div class="card-body">
+                            <div>
+                                <h5 class="card-title mb-3">نهایی کردن خرید</h5>
+                                <hr />
+                            </div>
+
+                            <div>
+                                <p class="mb-2">جمع کل: <strong>@string.Format("{0:n0}", cart.Order.Sum) تومان</strong></p>
+                            </div>
+
+                            <div>
+                                <button class="btn btn-primary w-100" @onclick="HandlePaymentRequest">پرداخت</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+
+}
+
+
+
+
+
+
+@code {
+
+    [Inject] IClient client { get; set; }
+    [Inject] IUserService UserService { get; set; }
+    [Inject] IOrderService OrderService { get; set; }
+    [Inject] IPaymentService PaymentService { get; set; }
+
+
+
+    [Inject] NavigationManager Navmanger { get; set; }
+    [Inject] ApiAuthenticationStateProvider apiAuthenticationStateProvider { get; set; }
+
+
+    private PaymentRequestInputModel model;
+    private ICollection<OrderDetailDTO> CartItems;
+    private Cart cart;
+
+    private bool Iswait = false;
+
+    private async Task RemoveFromCart(int itemId)
+    {
+        var response = await OrderService.RemoveOrderDetail(itemId);
+        await GetCart();
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Iswait = true;
+        try
+        {
+            await GetCart();
+        }
+        catch
+        {
+
+
+        }
+        finally
+        {
+            Iswait = false;
+        }
+
+    }
+
+    private async Task GetCart()
+    {
+        AuthenticationState authState = await apiAuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user?.Identity?.IsAuthenticated == true)
+        {
+            string userId = user.Claims.FirstOrDefault(c => c.Type == "nameid")?.Value;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+
+                var response = await OrderService.GetCart(int.Parse(userId));
+                cart = response.Data;
+
+                if (cart != null && cart.OrderDetailDTOs != null)
+                {
+                    CartItems = cart.OrderDetailDTOs;
+                }
+
+
+
+            }
+
+
+        }
+    }
+
+
+    //Payment
+    private PaymentRequestResponse paymentRequest;
+
+    private async Task HandlePaymentRequest()
+    {
+        // ایجاد مدل پرداخت
+        var model = new PaymentRequestInputModel
+            {
+                Amount = cart.Order.Sum, // مقدار پرداخت
+                OrderId = cart.Order.Id.ToString(), // شناسه سفارش
+            };
+
+        // ارسال درخواست پرداخت به API
+        paymentRequest = await PaymentService.PaymentRequestAsync(model);
+
+        // اگر موفقیت آمیز بود، به کاربر لینک پرداخت نشان می‌دهیم
+        if (paymentRequest.Success == 1)
+        {
+            Navmanger.NavigateTo(paymentRequest.Url);
+        }
+    }
+
+}
+
+
+
+
+

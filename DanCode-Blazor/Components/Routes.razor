@@ -1,0 +1,54 @@
+﻿
+<CascadingAuthenticationState>
+
+    <Router AppAssembly="typeof(Program).Assembly">
+
+        <Found Context="routeData">
+
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+
+
+                <Authorizing>
+                   <div class="text-center">
+
+                       <h1>در حال احراز هویت</h1>
+                       <DanCode_Blazor.Components.Pages.Utilites.LoadingSpinner></DanCode_Blazor.Components.Pages.Utilites.LoadingSpinner>
+                   </div>
+                </Authorizing>
+
+                <NotAuthorized>
+
+
+                    <h1>شما وارد سایت نشده اید</h1>
+
+                    @if (context.User?.Identity?.IsAuthenticated == false)
+                    {
+
+                        <RedirectToLogin />
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+
+                            <p>
+
+                                you are not Authorized to access this resource
+
+                            </p>
+
+                        </div>
+                    }
+
+                </NotAuthorized>
+
+            </AuthorizeRouteView>
+
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+
+        </Found>
+
+    </Router>
+
+
+</CascadingAuthenticationState>
+

@@ -1,0 +1,403 @@
+﻿@page "/"
+@using DanCode_Blazor.Components.Pages.Utilites
+
+
+<PageTitle>آکادمی فوتبال ایران</PageTitle>
+<title>آکادمی فوتبال ایران</title>
+
+
+<head>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+</head>
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Vazir&display=swap');
+
+    body, html {
+        overflow-x: hidden; /* حذف اسکرول افقی */
+        padding: 0;
+        margin: 0;
+    }
+
+    .background-div {
+        background-image: url('/Images/Site/wp8255680-football-4k-wallpapers.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        height: auto;
+        width: 100%;
+        position: relative;
+    }
+
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .title {
+        color: white !important;
+        font-family: 'Vazir', sans-serif;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        margin-top: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid white;
+        display: inline-block;
+    }
+
+    .title2 {
+        color: white !important;
+        font-family: 'Vazir', sans-serif;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        margin-top: 15px;
+        padding-bottom: 10px;
+        display: inline-block;
+    }
+
+    .lead {
+        color: white;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+        font-size: 1rem;
+    }
+
+    .btnn {
+        color: white !important;
+        border-color: white !important;
+    }
+
+    .btn-primary:hover {
+        background-color: #0b6131 !important;
+        color: white !important;
+    }
+
+    .btn-outline-secondary {
+        color: white !important;
+        border-color: white !important;
+    }
+
+        .btn-outline-secondary:hover {
+            background-color: #0b6131 !important;
+            color: white !important;
+        }
+
+    .carousel-item {
+        transition: transform 1s ease, opacity 1s ease;
+        width: 100%; /* اطمینان از اینکه تصاویر عرض صفحه را نمی‌گیرند */
+    }
+
+    .carousel-inner img {
+        width: 100%;
+        height: auto;
+    }
+
+    .carousel-fade .carousel-item {
+        opacity: 0;
+        transition: opacity 1s ease;
+    }
+
+        .carousel-fade .carousel-item.active {
+            opacity: 1;
+        }
+
+    .carousel-fade .carousel-item-next.carousel-item-left,
+    .carousel-fade .carousel-item-prev.carousel-item-right {
+        opacity: 0;
+    }
+
+    .carousel-fade .carousel-item-next,
+    .carousel-fade .carousel-item-prev,
+    .carousel-fade .carousel-item.active,
+    .carousel-fade .carousel-item-left,
+    .carousel-fade .carousel-item-right {
+        transform: none;
+    }
+
+    .container-fluid {
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .feature {
+        margin-bottom: 2rem;
+    }
+
+</style>
+
+
+<!--Introduction-->
+<div class="container my-3 background-div">
+
+    <div class="overlay"></div>
+
+    <div class="p-3 text-center position-relative">
+
+        <div>
+            <h1 class="display-5 fw-bold title">آکادمی فوتبال ایران</h1>
+
+        </div>
+        <div>
+            <h3 class=" title2">اولین آکادمی مجازی فوتبال در ایران</h3>
+
+        </div>
+
+        <div class="col-12 col-lg-6 mx-auto">
+
+            <p class="lead mb-4">
+                Quickly design and customize responsive mobile-first sites with Bootstrap,
+                the world’s most popular front-end open source toolkit,
+                featuring Sass variables and mixins, responsive grid system,
+                extensive prebuilt components, and powerful JavaScript plugins.
+                Quickly design and customize responsive mobile-first sites with Bootstrap,
+                the world’s most popular front-end open source toolkit,
+                featuring Sass variables and mixins, responsive grid system,
+                extensive prebuilt components, and powerful JavaScript plugins.
+                Quickly design and customize responsive mobile-first sites with Bootstrap,
+                the world’s most popular front-end open source toolkit,
+                featuring Sass variables and mixins, responsive grid system,
+                extensive prebuilt components, and powerful JavaScript plugins.
+            </p>
+
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+
+                <Button @onclick="GoToCourses" class="button btn btn-outline-secondary btn-lg px-4 gap-3">مشاهده دوره ها</Button>
+                <Button @onclick="GoToDrills" class="button btn btn-outline-secondary btn-lg px-4"> مشاهده تمرین ها</Button>
+                <Button @onclick="GoToProducts" class="button btn btn-outline-secondary btn-lg px-4"> مشاهده محصولات</Button>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<hr />
+@* <!--Courses-->
+<div class="container carousel">
+    <div id="carouselExampleIndicators" class="carousel slide carousel-fade" data-bs-ride="carousel">
+
+        <ol class="carousel-indicators">
+            <li data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active"></li>
+            <li data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"></li>
+            <li data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2"></li>
+        </ol>
+
+        <div class="carousel-inner">
+            @if (courseReadonlyDTOs == null || courseReadonlyDTOs.Count == 0)
+            {
+                <LoadingSpinner></LoadingSpinner>
+            }
+            else
+            {
+                @foreach (var item in courseReadonlyDTOs)
+                {
+
+                    <div @onclick="() => GoToCourse(item.Id)" class="carousel-item">
+
+
+                        <img class="d-block w-100" src="/Images/Site/wp8255680-football-4k-wallpapers.jpg" alt="Third slide">
+
+
+
+
+                    </div>
+
+                }
+            }
+
+
+        </div>
+
+        <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-bs-slide="next">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </a>
+
+        <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-bs-slide="prev">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </a>
+    </div>
+</div>
+<hr /> *@
+
+
+<!--Features-->
+<div class="container">
+
+    <h2 class=" pb-2 border-bottom text-center">خدمات ما</h2>
+
+    <div class="row g-4 py-5">
+
+        <!-- فیچر 1 -->
+        <!-- دوره -->
+        <div class="col-12 col-md-6 col-lg-4 d-flex justify-content-center">
+
+            <div class="feature p-4 text-center rounded shadow-lg position-relative" style="background-color: #f8f9fa; transition: transform 0.3s ease;">
+
+                <i class="bi bi-book fs-1 mb-3" style="color: #0b6131;"></i>
+
+                <h3 class="fs-3 text-body-emphasis">برگزاری دوره های علمی </h3>
+                <p>ما در آکادمی فوتبال ایران با برگزاری دوره های علمی قوتبال بر آنیم تا سطح دانش مربیان و بازیکنان و هواداران  فوتبال کشور عزیزمان را ارتقا دهیم</p>
+                <a href="/Courses" class="icon-link text-decoration-none" style="color: #0b6131; font-weight: bold;">
+                    مشاهده دوره ها
+                    <svg class="bi"><use xlink:href="#chevron-right"></use></svg>
+                </a>
+            </div>
+        </div>
+
+        <!-- فیچر 2 -->
+        <!-- تمرین بازیکنان-->
+        <div class="col-12 col-md-6 col-lg-4 d-flex justify-content-center">
+
+            <div class="feature p-4 text-center rounded shadow-lg position-relative" style="background-color: #f8f9fa; transition: transform 0.3s ease;">
+
+                <i class="fas fa-futbol fs-1" style="color: #0b6131;"></i> <!-- توپ فوتبال -->
+
+                <h3 class="fs-3 text-body-emphasis">آموزش و تربیت بازیکن</h3>
+
+                <p></p>
+
+                <a href="#" class="icon-link text-decoration-none" style="color: #0b6131; font-weight: bold;">
+                    مشاهده جوایز
+                    <svg class="bi"><use xlink:href="#chevron-right"></use></svg>
+                </a>
+            </div>
+        </div>
+
+        <!-- فیچر 3 -->
+        <!--برنامه-->
+        <div class="col-12 col-md-6 col-lg-4 d-flex justify-content-center">
+
+            <div class="feature p-4 text-center rounded shadow-lg position-relative" style="background-color: #f8f9fa; transition: transform 0.3s ease;">
+
+                <i class="fas fa-dumbbell fs-1" style="color: #0b6131;"></i> <!-- آیکون دمبل -->
+
+                <h3 class="fs-3 text-body-emphasis"> ارائه برنامه های تخصصی فوتبال</h3>
+
+                <p></p>
+
+                <a href="#" class="icon-link text-decoration-none" style="color: #0b6131; font-weight: bold;">
+                    مشاهده جوایز
+                    <svg class="bi"><use xlink:href="#chevron-right"></use></svg>
+                </a>
+
+            </div>
+        </div>
+
+        <!-- فیچر 4 -->
+        <!-- کشف و معرفی استعدادها -->
+        <div class="col-12 col-md-6 col-lg-4 d-flex justify-content-center">
+
+            <div class="feature p-4 text-center rounded shadow-lg position-relative" style="background-color: #f8f9fa; transition: transform 0.3s ease;">
+
+                <i class="fas fa-trophy fs-1" style="color: #0b6131;"></i> <!-- آیکون جام -->
+
+                <h3 class="fs-3 text-body-emphasis">کشف و معرفی استعدادها</h3>
+
+                <p>آکادمی ما تا کنون موفق به کسب افتخارات و جوایز متعدد در زمینه‌های مختلف فوتبالی شده است.</p>
+
+                <a href="#" class="icon-link text-decoration-none" style="color: #0b6131; font-weight: bold;">
+                    مشاهده جوایز
+                    <svg class="bi"><use xlink:href="#chevron-right"></use></svg>
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- فیچر 5 -->
+        <div class="col-12 col-md-6 col-lg-4 d-flex justify-content-center">
+
+            <div class="feature p-4 text-center rounded shadow-lg position-relative" style="background-color: #f8f9fa; transition: transform 0.3s ease;">
+
+                <i class="bi bi-book fs-1 mb-3" style="color: #0b6131;"></i>
+
+                <h3 class="fs-3 text-body-emphasis">افتخارات و جوایز</h3>
+
+                <p>آکادمی ما تا کنون موفق به کسب افتخارات و جوایز متعدد در زمینه‌های مختلف فوتبالی شده است.</p>
+
+                <a href="#" class="icon-link text-decoration-none" style="color: #0b6131; font-weight: bold;">
+
+                    مشاهده جوایز
+                    <svg class="bi"><use xlink:href="#chevron-right"></use></svg>
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- فیچر 6 -->
+        <div class="col-12 col-md-6 col-lg-4 d-flex justify-content-center">
+
+            <div class="feature p-4 text-center rounded shadow-lg position-relative" style="background-color: #f8f9fa; transition: transform 0.3s ease;">
+
+                <i class="bi bi-book fs-1 mb-3" style="color: #0b6131;"></i>
+
+                <h3 class="fs-3 text-body-emphasis">افتخارات و جوایز</h3>
+
+                <p>آکادمی ما تا کنون موفق به کسب افتخارات و جوایز متعدد در زمینه‌های مختلف فوتبالی شده است.</p>
+
+                <a href="#" class="icon-link text-decoration-none" style="color: #0b6131; font-weight: bold;">
+                    مشاهده جوایز
+                    <svg class="bi"><use xlink:href="#chevron-right"></use></svg>
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+
+@code {
+
+    [Inject] NavigationManager navigationManager { get; set; }
+    [Inject] IClient Client { get; set; }
+
+
+
+
+    private ICollection<CourseReadonlyDTO> courseReadonlyDTOs;
+
+
+    private async Task GoToCourses()
+    {
+
+        navigationManager.NavigateTo("/Courses");
+    }
+    private async Task GoToCourse(int ID)
+    {
+
+        navigationManager.NavigateTo($"Courses/{ID}");
+
+    }
+    private async Task GoToDrills()
+    {
+
+        navigationManager.NavigateTo($"/Drills");
+
+    }
+    private async Task GoToProducts()
+    {
+
+        navigationManager.NavigateTo($"/Products");
+
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        courseReadonlyDTOs = await Client.GetAllCoursesAsync();
+
+
+    }
+
+
+}

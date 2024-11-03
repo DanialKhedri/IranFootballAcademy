@@ -1,0 +1,62 @@
+﻿@inherits LayoutComponentBase
+
+<div class="modal @ModalClass" tabindex="-1" style="display:@(IsVisible ? "block" : "none");">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">@Title</h5>
+                <button type="button" class="btn-close" aria-label="Close" @onclick="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                @ChildContent
+            </div>
+
+            <div class="modal-footer">
+                @if (ShowCloseButton)
+                {
+                    <button type="button" class="btn btn-secondary" @onclick="Close">Cancel</button>
+                }
+                @if (ShowSaveButton)
+                {
+                    <button type="button" class="btn btn-primary" @onclick="Save">Ok</button>
+                }
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter] public string Title { get; set; } = "Modal Title";
+    [Parameter] public bool ShowCloseButton { get; set; } = true;
+    [Parameter] public bool ShowSaveButton { get; set; } = true;
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    private string ModalClass => IsVisible ? "show" : "";
+
+    public void Open()
+    {
+        IsVisible = true;
+    
+    }
+
+    public void Close()
+    {
+        IsVisible = false;
+        OnClose.InvokeAsync();
+
+    }
+
+    public void Save()
+    {
+        OnSave.InvokeAsync();
+    }
+}

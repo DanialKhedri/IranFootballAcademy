@@ -1,0 +1,175 @@
+﻿@page "/Drills/{DrillId:int}"
+@using DanCode_Blazor.Components.Pages.Utilites
+
+<PageTitle> آکادمی فوتبال ایران</PageTitle>
+<title> آکادمی فوتبال ایران</title>
+
+<style>
+    .text-green {
+        color: #0b6131;
+    }
+
+    .shadow-lg {
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+    }
+
+    .rounded {
+        border-radius: 0.5rem !important;
+    }
+
+</style>
+
+@if (IsWait == true)
+{
+    <LoadingSpinner></LoadingSpinner>
+}
+else
+{
+    <PageTitle>@DrillDTO.Title | آکادمی فوتبال ایران</PageTitle>
+    <title>@DrillDTO.Title | آکادمی فوتبال ایران</title>
+
+    <div class="divbackground mt-3 text-center">
+        <h2 class="display-4 font-weight-bold">@DrillDTO.Title</h2>
+        <p class="text-muted">@DrillDTO.Author</p>
+    </div>
+
+    <div class="container-md mt-4">
+        <div class="row">
+            <div class="col-md-8">
+                <!-- Image Section -->
+                <div class="card mb-3 shadow-lg border-0 rounded">
+                    <img src="/Images/Drills/@DrillDTO.Image" class="p-5 card-img-top rounded-top" alt="Drill Image" />
+                    <div class="card-body">
+                        <h5 class="card-title text-green font-weight-bold">@DrillDTO.Title</h5>
+                        <hr />
+                        <p class="card-text text-justify text-muted" style="white-space: pre-line;">@DrillDTO.Description</p>
+                    </div>
+                </div>
+
+                <!-- Title2 & Description2 -->
+                <div class="card mb-3 shadow-lg border-0 rounded">
+                    <div class="card-body">
+                        <h5 class="card-title text-green"><i class="bi bi-info-circle"></i> @DrillDTO.Title2</h5>
+                        <p class="text-muted" style="white-space: pre-line;">@DrillDTO.Description2</p>
+                    </div>
+                </div>
+
+                <!-- Drill Setups -->
+                <div class="card mb-3 shadow-lg border-0 rounded">
+                    <div class="card-body">
+                        <h5 class="card-title text-green"><i class="bi bi-tools"></i> تنظیم تمرین</h5>
+                        <p class="text-muted" style="white-space: pre-line;">@DrillDTO.DrillSetups</p>
+                    </div>
+                </div>
+
+                <!-- Drill Instructions -->
+                <div class="card mb-3 shadow-lg border-0 rounded">
+                    <div class="card-body">
+                        <h5 class="card-title text-green"><i class="bi bi-list-check"></i> دستورالعمل‌های تمرین</h5>
+                        <p class="text-muted" style="white-space: pre-line;">@DrillDTO.DrillInstructions</p>
+                    </div>
+                </div>
+
+                <!-- Drill Variations -->
+                <div class="card mb-3 shadow-lg border-0 rounded">
+                    <div class="card-body">
+                        <h5 class="card-title text-green"><i class="bi bi-arrow-repeat"></i> تنوع‌های تمرین</h5>
+                        <p class="text-muted" style="white-space: pre-line;">@DrillDTO.DrillVariotions</p>
+                    </div>
+                </div>
+
+                <!-- Drill Coaching Points -->
+                <div class="card mb-3 shadow-lg border-0 rounded">
+                    <div class="card-body">
+                        <h5 class="card-title text-green"><i class="bi bi-award"></i> نکات مربیگری تمرین</h5>
+                        <p class="text-muted" style="white-space: pre-line;">@DrillDTO.DrillCoachingPoints</p>
+                    </div>
+                </div>
+
+                <!-- Equipments -->
+                <div class="card mb-3 shadow-lg border-0 rounded">
+                    <div class="card-body">
+                        <h5 class="card-title text-green"><i class="bi bi-bag"></i> تجهیزات</h5>
+                        <p class="text-muted" style="white-space: pre-line;">@DrillDTO.Equipments</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <!-- Drill Info -->
+                <div class="card mb-3 shadow-lg border-0 rounded">
+                    <div class="card-body">
+                        <h5 class="card-title text-green"><i class="bi bi-person-circle"></i> نویسنده</h5>
+                        <p><strong>@DrillDTO.Author</strong> </p>
+                    </div>
+                </div>
+
+                <!-- Drill Ages -->
+                <div class="card mb-3 shadow-lg border-0 rounded">
+                    <div class="card-body">
+                        <h5 class="card-title text-green"><i class="bi bi-calendar"></i> سنین مناسب برای تمرین</h5>
+                        <ul class="list-group">
+                            @if (DrillDTO.DrillAges != null || DrillDTO.DrillAges.Count != 0)
+                            {
+                                @foreach (var age in DrillDTO.DrillAges)
+                                {
+                                    <li class="list-group-item">@age.Description</li>
+                                }
+                            }
+
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Drill Types -->
+                <div class="card mb-3 shadow-lg border-0 rounded">
+                    <div class="card-body">
+                        <h5 class="card-title text-green"><i class="bi bi-tags"></i> نوع تمرین</h5>
+                        <ul class="list-group">
+
+                            @if (DrillDTO.DrillTypes != null || DrillDTO.DrillTypes.Count != 0)
+                            {
+                                @foreach (var type in DrillDTO.DrillTypes)
+                                {
+                                    <li class="list-group-item">@type.Description</li>
+
+                                }
+                            }
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+
+    [Inject] IClient Client { get; set; }
+
+    [Parameter]
+    public int DrillId { get; set; }
+
+    private DrillReadonlyDTO DrillDTO;
+    private bool IsWait = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        IsWait = true;
+        try
+        {
+            DrillDTO = await Client.GetDrillByIdAsync(DrillId);
+        }
+        catch
+        {
+            // Handle exception
+        }
+        finally
+        {
+            IsWait = false;
+        }
+    }
+
+}
+

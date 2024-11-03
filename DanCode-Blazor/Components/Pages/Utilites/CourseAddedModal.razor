@@ -1,0 +1,93 @@
+﻿@inherits LayoutComponentBase
+
+
+<style>
+
+    .btn-custom {
+        background-color: #0b6131 !important;
+        color: white !important;
+        border: 2px solid transparent;
+        padding: 10px 20px;
+        border-radius: 5px;
+        transition: all 0.3s ease; /* اضافه کردن ترانزیشن برای تغییرات نرم‌تر */
+    }
+
+
+        .btn-custom:hover {
+            background-color: #094d23 !important; /* تغییر رنگ پس‌زمینه */
+            color: #fff !important; /* حفظ رنگ متن */
+            border-color: #0b6131; /* اضافه کردن حاشیه */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* اضافه کردن سایه برای عمق */
+            transform: translateY(-3px); /* اضافه کردن افکت شناور به دکمه */
+        }
+
+</style>
+
+<div class="modal @ModalClass" tabindex="-1" style="display:@(IsVisible ? "block" : "none");">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">@Title</h5>
+                <button type="button" class="btn-close" aria-label="Close" @onclick="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                @ChildContent
+            </div>
+
+            <div class="modal-footer">
+
+                @if (ShowCloseButton)
+                {
+
+                    <button type="button" class="btn btn-secondary" @onclick="Close">بستن</button>
+
+                }
+                @if (ShowSaveButton)
+                {
+
+                    <button type="button" class="btn btn-custom" @onclick="Save">رفتن به سبد خرید</button>
+
+                }
+
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@code {
+    [Inject] NavigationManager navmanger { get; set; }
+
+    [Parameter] public string Title { get; set; } = "Modal Title";
+    [Parameter] public bool ShowCloseButton { get; set; } = true;
+    [Parameter] public bool ShowSaveButton { get; set; } = true;
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    private string ModalClass => IsVisible ? "show" : "";
+
+    public void Open()
+    {
+        IsVisible = true;
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        IsVisible = false;
+        OnClose.InvokeAsync();
+        StateHasChanged();
+    }
+
+    public void Save()
+    {
+        navmanger.NavigateTo("/Cart");
+    }
+}

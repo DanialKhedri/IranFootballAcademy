@@ -1,0 +1,169 @@
+﻿@page "/LogIn"
+@using DanCode_Blazor.Services.Authentication
+@rendermode InteractiveServer
+
+<PageTitle> ورود | آکادمی فوتبال ایران </PageTitle>
+<title> ورود | آکادمی فوتبال ایران </title>
+
+<div class="d-flex justify-content-center my-2 min-vh-100">
+
+    <div class="card shadow-lg p-2" style="max-width: 400px; width: 100%;">
+
+        <div class="card-body">
+
+
+
+            @if (errorMessage != null)
+            {
+
+                <div class="alert alert-danger" role="alert">
+
+                    @errorMessage
+
+                </div>
+
+
+            }
+
+
+
+            <div>
+                <h3 class="text-center mb-1">ورود</h3>
+                <hr />
+            </div>
+
+
+            <EditForm Model="userLogInDTO" OnValidSubmit="HandleLogIn">
+
+                <DataAnnotationsValidator></DataAnnotationsValidator>
+
+
+                <div class="form-group mb-3">
+
+                    <label for="شماره موبایل" class="form-label">شماره موبایل</label>
+
+                    <InputText id="شماره موبایل" class="form-control" @bind-Value="userLogInDTO.PhoneNumber" placeholder="لطفا شماره عبور خود را وارد کنید"></InputText>
+
+
+                   
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="password" class="form-label">رمز عبور</label>
+                    <InputText id="password" type="password" class="form-control" @bind-Value="userLogInDTO.Password" placeholder="لطفا رمز عبور خود را وارد کنید"></InputText>
+
+                   
+
+                </div>
+
+                <button type="submit" class="btn btn-custom w-100">ورود</button>
+            </EditForm>
+
+            <div class="text-center mt-3">
+                <a href="/LogInWithSms" class="text-muted">ورود با ارسال پیامک</a>
+            </div>
+            <div class="text-center mt-3">
+                <a href="/Register" class="text-muted">حساب کاربری ندارید؟</a>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+
+    .btn-custom {
+        background-color: #0b6131 !important;
+        color: white !important;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-custom:hover {
+            background-color: #094d23 !important;
+            color: white !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+    /* Style the card to give it a modern look */
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+
+    .form-control {
+        border-radius: 5px;
+    }
+
+
+    .password-toggle-icon {
+        position: absolute;
+        top: 50%;
+        right: 15px;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #aaa;
+        font-size: 1.2rem;
+    }
+
+        .password-toggle-icon:hover {
+            color: #333;
+        }
+
+</style>
+
+@code {
+
+    [Inject] IClient httpclient { get; set; }
+    [Inject] NavigationManager NavManger { get; set; }
+    [Inject] IAuthenticationService AuthService { get; set; }
+
+    private UserLogInDTO userLogInDTO = new UserLogInDTO();
+    private string errorMessage;
+
+  
+
+    private async Task HandleLogIn()
+    {
+        try
+        {
+
+      
+
+            var Isexist = await httpclient.PhoneNumberIsExistAsync(userLogInDTO.PhoneNumber);
+            if (!Isexist)
+            {
+                errorMessage = "شماره موبایل وارد شده در سیستم ثبت نشده است. لطفاً ابتدا ثبت ‌نام کنید";
+
+                return;
+
+            }
+
+
+
+            var response = await AuthService.AuthenticateAsync(userLogInDTO);
+            if (response)
+            {
+                NavManger.NavigateTo("/");
+            }
+            else
+            {
+                errorMessage = "رمز عبور اشتباه است";
+            };
+
+        }
+        catch (ApiException ex)
+        {
+            // Handle error appropriately
+            throw;
+        }
+    }
+
+
+
+
+
+
+
+
+}

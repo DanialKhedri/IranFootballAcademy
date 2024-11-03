@@ -1,0 +1,484 @@
+﻿@page "/EditDrill/{DrillId:int}"
+@using Application.Extensions.Generators.NameGenerator
+@using DanCode_Blazor.Components.Layout
+@using DanCode_Blazor.Components.Pages.Utilites
+@using DanCode_Blazor.Services.Base.interfaces
+@rendermode InteractiveServer
+
+@layout AdminPanelLayout;
+<PageTitle>Edit Drill</PageTitle>
+
+<style>
+    .divbackground {
+        background-color: #0b6131 !important;
+        color: white;
+    }
+
+    .formbackground {
+        background-color: #F7F9F2 !important;
+    }
+
+    .form-label {
+        /*  background-color: #0b6131;
+            color: white; */
+        padding: 5px 10px;
+        border-radius: 3px;
+        display: inline-block;
+        width: 100%; /* عرض لیبل‌ها را 100% عرض والد قرار می‌دهد */
+        text-align: left; /* متن لیبل را به چپ تراز می‌کند */
+        font-weight: bold; /* متن لیبل‌ها را پررنگ‌تر می‌کند */
+        margin-bottom: 10px; /* فاصله کمی از عناصر زیرین ایجاد می‌کند */
+    }
+
+
+    .form-control, .form-control-file {
+        border: 1px solid #0b6131;
+        border-radius: 5px;
+        box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+        font-size: 16px;
+    }
+
+        .form-control:focus, .form-control-file:focus {
+            border-color: #0b6131;
+            box-shadow: 0 0 8px rgba(11, 97, 49, 0.8);
+        }
+
+    .btn-success {
+        background-color: #0b6131;
+        border-color: #0b6131;
+    }
+
+    .btn-danger {
+        background-color: #b33a3a;
+        border-color: #b33a3a;
+    }
+
+        .btn-danger:hover {
+            background-color: #a33030;
+        }
+
+    .card {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    hr {
+        border: 1px solid #0b6131;
+    }
+
+    img {
+        border: 2px solid #0b6131;
+        border-radius: 10px;
+    }
+
+    video {
+        border-radius: 10px;
+    }
+
+    h2, h3, h4 {
+        color: #0b6131;
+    }
+
+    .alert-danger {
+        background-color: #ffcccc;
+        color: #b33a3a;
+        border-radius: 5px;
+        padding: 10px;
+    }
+
+    .list-group-item {
+        border-radius: 5px;
+        box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+
+<div class="container mt-4">
+
+    <div>
+        <h2 class="text-center m-2 p-3 divbackground rounded">Edit Drill</h2>
+        <hr />
+    </div>
+
+
+    @if (drillReadonlyDTO == null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
+        <div class="card p-4 mb-4">
+
+            <EditForm Model="drillReadonlyDTO" OnValidSubmit="SendData">
+
+                <DataAnnotationsValidator />
+        
+
+                <!--Author-->
+                <div class="form-group mb-3">
+
+                    <label>Author</label>
+                    <InputText class="form-control"
+                               placeholder="Enter Auhtor Of This Drill ex: Danial Khedri"
+                               @bind-Value="drillReadonlyDTO.Author" />
+
+                    <ValidationMessage For="(()=> drillReadonlyDTO.Author)"></ValidationMessage>
+
+                </div>
+                <hr />
+
+                <!--Main Title-->
+                <div class="form-group mb-3">
+
+                    <label>Main Title</label>
+                    <InputText class="form-control"
+                               placeholder="Enter Main Title of Drill ex: 1v1 Competition"
+                               @bind-Value="drillReadonlyDTO.Title" />
+                    <ValidationMessage For="(()=> drillReadonlyDTO.Title)"></ValidationMessage>
+
+                </div>
+                <hr />
+
+                <!--Description-->
+                <div class="form-group mb-3">
+
+                    <label>Description</label>
+                    <InputTextArea class="form-control"
+                                   placeholder="Enter Description of Drill"
+                                   @bind-Value="drillReadonlyDTO.Description"></InputTextArea>
+                    <ValidationMessage For="(()=> drillReadonlyDTO.Description)"></ValidationMessage>
+
+                </div>
+                <hr />
+
+                <!--Second Title-->
+                <div class="form-group mb-3">
+
+                    <label>Second Title</label>
+                    <InputText class="form-control"
+                               placeholder="Enter Second Title of Drill"
+                               @bind-Value="drillReadonlyDTO.Title2" />
+
+                    <ValidationMessage For="(()=> drillReadonlyDTO.Title2)"></ValidationMessage>
+
+                </div>
+                <hr />
+
+
+                <!-- Second Description-->
+                <div class="form-group mb-3">
+
+                    <label> Second Description</label>
+                    <InputTextArea class="form-control"
+                                   placeholder="Enter Description of Drill"
+                                   @bind-Value="drillReadonlyDTO.Description2"></InputTextArea>
+                    <ValidationMessage For="(()=> drillReadonlyDTO.Description2)"></ValidationMessage>
+
+                </div>
+                <hr />
+
+                <!--Image-->
+                <div class="form-group mb-3">
+
+                  
+                    <hr />
+
+                    <div>
+                        <div>
+                            <label>Image</label>
+                        </div>
+                        @if (!string.IsNullOrEmpty(drillReadonlyDTO.Image))
+                        {
+
+                            <img class="img-fluid p-5 m-1" src="/Images/Drills/@drillReadonlyDTO.Image" alt="Selected Image" />
+
+                        }
+                    </div>
+
+
+                    <hr />
+                    <div>
+                        <InputFile OnChange="HandleSelectedFiles" @bind-Value="ImageFormFile" />
+                        <label> Select New Image</label>
+                    </div>
+
+                    <div>
+                        @if (!string.IsNullOrEmpty(imageDataUrl))
+                        {
+                            <img class="img-fluid p-5 m-1" src="@imageDataUrl" alt="Selected Image" />
+                        }
+                    </div>
+
+
+
+
+                </div>
+                <hr />
+
+
+                <div class="form-group border p-1">
+
+                    <hr />
+
+                    <!--Drill Setups-->
+                    <label class="m-1">Drill Setups</label>
+                    <InputTextArea type="text" @bind-Value="drillReadonlyDTO.DrillSetups" />
+
+
+
+                    <hr />
+
+
+
+                    <!--Drill Instructions-->
+                    <label class="m-1">Drill Instructions</label>
+                    <InputTextArea type="text" @bind-Value="drillReadonlyDTO.DrillInstructions" />
+                    <hr />
+
+
+                    <!--Drill Variotions-->
+                    <label class="m-1">Drill Variotions</label>
+                    <InputTextArea type="text" @bind-Value="drillReadonlyDTO.DrillVariotions" />
+                    <hr />
+
+                    <!--Drill CoachingPoints-->
+                    <label class="m-1">Drill CoachingPoints</label>
+                    <InputTextArea type="text" @bind-Value="drillReadonlyDTO.DrillCoachingPoints" />
+                    <hr />
+
+                    <!--Equipments-->
+                    <label class="m-1">Drill Equipments</label>
+                    <InputTextArea type="text" @bind-Value="drillReadonlyDTO.Equipments" />
+                    <hr />
+                </div>
+
+                <!-- Submit Button -->
+                <div class="text-center m-1">
+                    <button class="btn btn-success" type="submit">Update Drill</button>
+                </div>
+
+            </EditForm>
+
+
+        </div>
+    }
+
+    @if (Message != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @Message
+        </div>
+    }
+
+    @if (isCopying)
+    {
+        <div class="text-center mt-4">
+            <LoadingSpinner></LoadingSpinner>
+            <h2>Please Wait...</h2>
+        </div>
+    }
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+@code {
+
+    private string? Message;
+
+
+    [Inject] IDrillService? drillService { get; set; }
+    [Inject] NavigationManager NavManger { get; set; }
+
+
+    private List<int> AgeselectedIds = new List<int>();
+    private List<int> TypeselectedIds = new List<int>();
+
+    [Parameter]
+    public int DrillId { get; set; }
+    DrillReadonlyDTO drillReadonlyDTO = new DrillReadonlyDTO();
+
+    private string? imageDataUrl;
+    private IBrowserFile? ImageFormFile { get; set; }
+
+    private List<DrillAgeReadonlyDTO> DrillAgeDTOs = new List<DrillAgeReadonlyDTO>();
+    private List<DrillTypeReadOnlyDTO> DrillTypeDTOs = new List<DrillTypeReadOnlyDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var drillageresponse = await drillService.GetAllDrillAges();
+        var drilltyperesponse = await drillService.GetAllDrillTypes();
+
+
+        DrillAgeDTOs = drillageresponse.Data;
+        DrillTypeDTOs = drilltyperesponse.Data;
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        var Id = DrillId;
+        var response = await drillService.GetDrillById(Id);
+
+        drillReadonlyDTO = response.Data;
+        imageDataUrl = drillReadonlyDTO.Image;
+
+
+
+    }
+
+    private async Task HandleSelectedFiles(InputFileChangeEventArgs e)
+    {
+        ImageFormFile = e.File;
+
+        if (ImageFormFile != null)
+        {
+            using var memoryStream = new MemoryStream();
+            await ImageFormFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).CopyToAsync(memoryStream); // Maximum file size of 10 MB
+            imageDataUrl = $"data:{ImageFormFile.ContentType};base64,{Convert.ToBase64String(memoryStream.ToArray())}";
+        }
+
+    }
+
+    private bool isCopying = false;
+
+    #region SelectAges
+
+    private async Task AgeOnCheckboxChange(ChangeEventArgs e, int id)
+    {
+        var isChecked = (bool)e.Value;
+
+        if (isChecked)
+        {
+            if (!AgeselectedIds.Contains(id))
+            {
+                AgeselectedIds.Add(id);
+            }
+        }
+        else
+        {
+            if (AgeselectedIds.Contains(id))
+            {
+                AgeselectedIds.Remove(id);
+            }
+        }
+    }
+
+    #endregion
+
+
+    #region SelectType
+
+    private async Task TypeOnCheckboxChange(ChangeEventArgs e, int id)
+    {
+        var isChecked = (bool)e.Value;
+
+        if (isChecked)
+        {
+            if (!TypeselectedIds.Contains(id))
+            {
+                TypeselectedIds.Add(id);
+            }
+        }
+        else
+        {
+            if (TypeselectedIds.Contains(id))
+            {
+                TypeselectedIds.Remove(id);
+            }
+        }
+    }
+
+    #endregion
+
+    public async Task SendData()
+    {
+        isCopying = true;
+
+        try
+        {
+
+            EditDrillDTO editDrillDTO = new EditDrillDTO()
+                {
+                    Id = drillReadonlyDTO.Id,
+                    Author = drillReadonlyDTO.Author,
+                    Title = drillReadonlyDTO.Title,
+                    Description = drillReadonlyDTO.Description,
+                    Title2 = drillReadonlyDTO.Title2,
+                    Description2 = drillReadonlyDTO.Description2,
+                    Image = drillReadonlyDTO.Image,
+
+                    DrillSetups = drillReadonlyDTO.DrillSetups,
+                    DrillInstructions = drillReadonlyDTO.DrillInstructions,
+                    DrillCoachingPoints = drillReadonlyDTO.DrillCoachingPoints,
+                    DrillVariotions = drillReadonlyDTO.DrillVariotions,
+                    Equipments = drillReadonlyDTO.Equipments,
+
+                     
+
+                };
+
+            #region AddImage
+
+            if (ImageFormFile != null)
+            {
+                //Save New Image
+
+                editDrillDTO.Image = NameGenerator.GenerateUniqCode() + Path.GetExtension(ImageFormFile.Name);
+                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Images/Drills", editDrillDTO.Image);
+
+                using (var stream = ImageFormFile.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5)) // حداکثر 5 مگابایت
+                {
+                    using (var fileStream = new FileStream(imagePath, FileMode.Create))
+                    {
+                        await stream.CopyToAsync(fileStream);
+                    }
+                }
+
+            }
+
+            #endregion
+
+
+
+            editDrillDTO.SelectedAges = AgeselectedIds;
+            editDrillDTO.SelectedTypes = TypeselectedIds;
+
+
+
+            var response = await drillService.EditDrill(editDrillDTO);
+
+            if (response.Data == true)
+            {
+                Message = "Drill Edited";
+            }
+            else
+                Message = "Error";
+
+        }
+        catch
+        {
+
+            Message = "Error";
+        }
+        finally
+        {
+
+            isCopying = false;
+
+        }
+
+    }
+
+}

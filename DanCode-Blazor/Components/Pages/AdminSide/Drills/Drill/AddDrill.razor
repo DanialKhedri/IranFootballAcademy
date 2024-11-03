@@ -1,0 +1,432 @@
+﻿@page "/AdminSide/AddDrill"
+@using Application.Extensions.Generators.NameGenerator
+@using DanCode_Blazor.Components.Layout
+@using DanCode_Blazor.Components.Pages.Utilites
+@using DanCode_Blazor.Services.Base.interfaces
+@rendermode InteractiveServer
+@layout AdminPanelLayout;
+
+
+<PageTitle>Add Drill</PageTitle>
+
+<style>
+    .divbackground {
+        background-color: #0b6131 !important;
+        color: white;
+    }
+
+    .formbackground {
+        background-color: #F7F9F2 !important;
+    }
+
+    .form-label {
+        /*     background-color: #0b6131;
+            color: white; */
+        padding: 5px 10px;
+        border-radius: 3px;
+        display: inline-block;
+        width: 100%;
+        text-align: left;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .form-control, .form-control-file {
+        border: 1px solid #0b6131;
+        border-radius: 5px;
+        box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+
+        .form-control:focus, .form-control-file:focus {
+            border-color: #0b6131;
+            box-shadow: 0 0 8px rgba(11, 97, 49, 0.8);
+        }
+
+    .btn-custom {
+        background-color: #0b6131 !important;
+        color: white !important;
+    }
+
+        .btn-custom:hover {
+            background-color: #094d23 !important;
+        }
+
+</style>
+
+
+<div class="container mt-4">
+
+    <div>
+        <h2 class="text-center m-2 p-3 divbackground rounded">Add Drill</h2>
+        <hr />
+    </div>
+
+    <div class="card p-4 mb-4 formbackground">
+
+        <EditForm Model="AddDrillDTO" OnValidSubmit="SendData">
+
+            <DataAnnotationsValidator></DataAnnotationsValidator>
+            <ValidationSummary></ValidationSummary>
+
+            <!--Author-->
+            <div class="form-group mb-3">
+
+                <label>Author</label>
+                <InputText class="form-control"
+                           placeholder="Enter Auhtor Of This Drill ex: Danial Khedri"
+                           @bind-Value="AddDrillDTO.Author" />
+
+                <ValidationMessage For="(()=> AddDrillDTO.Author)"></ValidationMessage>
+
+            </div>
+            <hr />
+
+            <!--Main Title-->
+            <div class="form-group mb-3">
+
+                <label>Main Title</label>
+                <InputText class="form-control"
+                           placeholder="Enter Main Title of Drill ex: 1v1 Competition"
+                           @bind-Value="AddDrillDTO.Title" />
+                <ValidationMessage For="(()=> AddDrillDTO.Title)"></ValidationMessage>
+
+            </div>
+            <hr />
+
+            <!--Description-->
+            <div class="form-group mb-3">
+
+                <label>Description</label>
+                <InputTextArea class="form-control"
+                               placeholder="Enter Description of Drill"
+                               @bind-Value="AddDrillDTO.Description"></InputTextArea>
+                <ValidationMessage For="(()=> AddDrillDTO.Description)"></ValidationMessage>
+
+            </div>
+            <hr />
+
+            <!--Second Title-->
+            <div class="form-group mb-3">
+
+                <label>Second Title</label>
+                <InputText class="form-control"
+                           placeholder="Enter Second Title of Drill"
+                           @bind-Value="AddDrillDTO.Title2" />
+
+                <ValidationMessage For="(()=> AddDrillDTO.Title2)"></ValidationMessage>
+
+            </div>
+            <hr />
+
+            <!-- Second Description-->
+            <div class="form-group mb-3">
+
+                <label> Second Description</label>
+                <InputTextArea class="form-control"
+                               placeholder="Enter Description of Drill"
+                               @bind-Value="AddDrillDTO.Description2"></InputTextArea>
+                <ValidationMessage For="(()=> AddDrillDTO.Description2)"></ValidationMessage>
+
+            </div>
+            <hr />
+
+
+            <!--Image-->
+            <div class="form-group mb-3">
+
+                <label class="m-1">Select Image</label>
+
+                <InputFile OnChange="HandleSelectedFiles" @bind-Value="ImageFormFile" />
+                @if (!string.IsNullOrEmpty(imageDataUrl))
+                {
+                    <img class="img-fluid p-5 m-1" src="@imageDataUrl" alt="Selected Image" />
+                }
+
+
+            </div>
+            <hr />
+
+            <div class="form-group border p-1">
+
+                <hr />
+
+                <!--Drill Setups-->
+                <label class="m-1">Drill Setups</label>
+                <InputTextArea type="text" @bind-Value="AddDrillDTO.DrillSetups" />
+
+
+
+                <hr />
+
+
+
+                <!--Drill Instructions-->
+                <label class="m-1">Drill Instructions</label>
+                <InputTextArea type="text" @bind-Value="AddDrillDTO.DrillInstructions" />
+                <hr />
+
+
+                <!--Drill Variotions-->
+                <label class="m-1">Drill Variotions</label>
+                <InputTextArea type="text" @bind-Value="AddDrillDTO.DrillVariotions" />
+                <hr />
+
+                <!--Drill CoachingPoints-->
+                <label class="m-1">Drill Coaching Points</label>
+                <InputTextArea type="text" @bind-Value="AddDrillDTO.DrillCoachingPoints" />
+                <hr />
+
+                <!--Equipments-->
+                <label class="m-1">Equipments</label>
+                <InputTextArea type="text" @bind-Value="AddDrillDTO.Equipments" />
+                <hr />
+            </div>
+
+            <!--SelectedAges-->
+            <h2 class="form-group my-3">Select Ages of Drill </h2>
+            <div class="border p-3">
+
+                @if (DrillAgeDTOs == null)
+                {
+                    <LoadingSpinner />
+                }
+                else
+                {
+
+                    @foreach (var item in DrillAgeDTOs)
+                    {
+                        <div class="form-group">
+                            <hr />
+                            <label class="form-label">@item.Age || @item.Description</label>
+                            <input type="checkbox" value="@item.Id" @onchange="e => AgeOnCheckboxChange(e, item.Id)" />
+                            <hr />
+                        </div>
+                    }
+
+                }
+
+            </div>
+            <hr />
+
+
+            <!--SelectedTypes-->
+            <h3 class=" my-3">Select Types of Drill </h3>
+            <div class="border p-3">
+
+                @if (DrillTypeDTOs == null)
+                {
+                    <LoadingSpinner />
+
+                }
+                else
+                {
+
+                    @foreach (var item in DrillTypeDTOs)
+                    {
+                        <div class="form-group">
+                            <hr />
+                            <label class="form-label">@item.UniqueName || @item.Description</label>
+                            <input type="checkbox" value="@item.Id" @onchange="e => TypeOnCheckboxChange(e, item.Id)" />
+                            <hr />
+                        </div>
+                    }
+
+                }
+
+            </div>
+            <hr />
+
+            <!--Submit btn-->
+            <div class="py-3 my-3 text-center">
+                <Button Class="btn divbackground" Type="ButtonType.Submit">Add Drill </Button>
+            </div>
+            <hr />
+
+
+        </EditForm>
+
+
+    </div>
+    @if (Message != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @Message
+        </div>
+    }
+
+    @if (isCopying)
+    {
+        <div class="text-center mt-4">
+            <h2>Please Wait...</h2>
+        </div>
+    }
+
+</div>
+
+
+
+
+
+@code {
+
+    [Inject] IDrillService drillService { get; set; }
+    [Inject] NavigationManager Navmanger { get; set; }
+
+    private bool isCopying = false;
+
+    private string Message;
+    private string imageDataUrl;
+
+    private IBrowserFile ImageFormFile { get; set; }
+
+    private AddDrillDTO AddDrillDTO = new AddDrillDTO();
+
+    private List<DrillAgeReadonlyDTO> DrillAgeDTOs = new List<DrillAgeReadonlyDTO>();
+    private List<DrillTypeReadOnlyDTO> DrillTypeDTOs = new List<DrillTypeReadOnlyDTO>();
+
+
+    private List<int> AgeselectedIds = new List<int>();
+    private List<int> TypeselectedIds = new List<int>();
+
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var drillageresponse = await drillService.GetAllDrillAges();
+        var drilltyperesponse = await drillService.GetAllDrillTypes();
+
+        DrillAgeDTOs = drillageresponse.Data;
+        DrillTypeDTOs = drilltyperesponse.Data;
+    }
+
+
+
+
+
+
+    #region SelectAges
+
+    private async Task AgeOnCheckboxChange(ChangeEventArgs e, int id)
+    {
+        var isChecked = (bool)e.Value;
+
+        if (isChecked)
+        {
+            if (!AgeselectedIds.Contains(id))
+            {
+                AgeselectedIds.Add(id);
+            }
+        }
+        else
+        {
+            if (AgeselectedIds.Contains(id))
+            {
+                AgeselectedIds.Remove(id);
+            }
+        }
+    }
+
+    #endregion
+
+    #region SelectType
+
+    private async Task TypeOnCheckboxChange(ChangeEventArgs e, int id)
+    {
+        var isChecked = (bool)e.Value;
+
+        if (isChecked)
+        {
+            if (!TypeselectedIds.Contains(id))
+            {
+                TypeselectedIds.Add(id);
+            }
+        }
+        else
+        {
+            if (TypeselectedIds.Contains(id))
+            {
+                TypeselectedIds.Remove(id);
+            }
+        }
+    }
+
+    #endregion
+
+
+
+
+    private async Task HandleSelectedFiles(InputFileChangeEventArgs e)
+    {
+        ImageFormFile = e.File;
+
+        if (ImageFormFile != null)
+        {
+            using var memoryStream = new MemoryStream();
+            await ImageFormFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).CopyToAsync(memoryStream); // Maximum file size of 10 MB
+            imageDataUrl = $"data:{ImageFormFile.ContentType};base64,{Convert.ToBase64String(memoryStream.ToArray())}";
+        }
+
+    }
+
+
+    private async Task SendData()
+    {
+        isCopying = true;
+        StateHasChanged();
+
+        try
+        {
+
+
+
+            AddDrillDTO.DrillTypes = TypeselectedIds;
+            AddDrillDTO.SelectedAges = AgeselectedIds;
+
+            #region AddImage
+
+            if (ImageFormFile != null)
+            {
+                //Save New Image
+
+                AddDrillDTO.Image = NameGenerator.GenerateUniqCode() + Path.GetExtension(ImageFormFile.Name);
+                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Images/Drills", AddDrillDTO.Image);
+
+                using (var stream = ImageFormFile.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5)) // حداکثر 5 مگابایت
+                {
+                    using (var fileStream = new FileStream(imagePath, FileMode.Create))
+                    {
+                        await stream.CopyToAsync(fileStream);
+                    }
+                }
+
+            }
+            #endregion
+
+            var response = await drillService.AddDrill(AddDrillDTO);
+
+            if (response.Data == true)
+            {
+                Navmanger.NavigateTo("AdminSide/GetAllDrills");
+
+            }
+            else
+                Message = "Error";
+        }
+        catch
+        {
+
+            Message = "Error";
+        }
+        finally
+        {
+            isCopying = false;
+            StateHasChanged();
+        }
+    }
+
+
+}

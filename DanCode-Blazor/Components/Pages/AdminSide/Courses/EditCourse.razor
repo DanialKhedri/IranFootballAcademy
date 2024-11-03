@@ -1,0 +1,599 @@
+﻿@page "/AdminSide/EditCourse/{CourseId:int}"
+@rendermode InteractiveServer
+
+@using Application.Extensions.Generators.NameGenerator
+@using DanCode_Blazor.Components.Layout
+@using DanCode_Blazor.Components.Pages.Utilites
+@using DanCode_Blazor.Providers
+@using DanCode_Blazor.Services.Base.interfaces
+@using global::Services.Base.interfaces
+
+@layout AdminPanelLayout;
+
+<PageTitle>Edit Course</PageTitle>
+
+<style>
+    .divbackground {
+        background-color: #0b6131 !important;
+        color: white;
+    }
+
+    .formbackground {
+        background-color: #F7F9F2 !important;
+    }
+
+    .form-label {
+        background-color: #0b6131;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 3px;
+        display: inline-block;
+        width: 100%; /* عرض لیبل‌ها را 100% عرض والد قرار می‌دهد */
+        text-align: left; /* متن لیبل را به چپ تراز می‌کند */
+        font-weight: bold; /* متن لیبل‌ها را پررنگ‌تر می‌کند */
+        margin-bottom: 10px; /* فاصله کمی از عناصر زیرین ایجاد می‌کند */
+    }
+
+
+    .form-control, .form-control-file {
+        border: 1px solid #0b6131;
+        border-radius: 5px;
+        box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+        font-size: 16px;
+    }
+
+        .form-control:focus, .form-control-file:focus {
+            border-color: #0b6131;
+            box-shadow: 0 0 8px rgba(11, 97, 49, 0.8);
+        }
+
+    .btn-success {
+        background-color: #0b6131;
+        border-color: #0b6131;
+    }
+
+    .btn-danger {
+        background-color: #b33a3a;
+        border-color: #b33a3a;
+    }
+
+        .btn-danger:hover {
+            background-color: #a33030;
+        }
+
+    .card {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    hr {
+        border: 1px solid #0b6131;
+    }
+
+    img {
+        border: 2px solid #0b6131;
+        border-radius: 10px;
+    }
+
+    video {
+        border-radius: 10px;
+    }
+
+    h2, h3, h4 {
+        color: #0b6131;
+    }
+
+    .alert-danger {
+        background-color: #ffcccc;
+        color: #b33a3a;
+        border-radius: 5px;
+        padding: 10px;
+    }
+
+    .list-group-item {
+        border-radius: 5px;
+        box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+
+
+<div class="container mt-4">
+
+    <div>
+        <h2 class="text-center m-2 p-3 divbackground rounded">Edit Course</h2>
+        <hr />
+    </div>
+
+    @if (CourseReadonlyDTO == null)
+    {
+        <LoadingSpinner />
+    }
+
+    else
+    {
+        <div class="card p-4 mb-4">
+
+            <EditForm Model="CourseReadonlyDTO" OnValidSubmit="SendData" Context="editcontext">
+
+                <DataAnnotationsValidator />
+
+
+                <!-- Author -->
+                <div class="form-group mb-3">
+                    <label for="author" class="form-label">Author</label>
+                    <InputText id="author" class="form-control" placeholder="Enter Author of This Course ex: Danial Khedri" @bind-Value="CourseReadonlyDTO.Author" />
+                    <ValidationMessage For="(() => CourseReadonlyDTO.Author)" />
+                </div>
+
+                <!-- Title -->
+                <div class="form-group mb-3">
+                    <label for="title" class="form-label">Title</label>
+                    <InputText id="title" class="form-control" placeholder="Enter Title of Course ex: 1v1 Competition" @bind-Value="CourseReadonlyDTO.Title" />
+                    <ValidationMessage For="(() => CourseReadonlyDTO.Title)" />
+                </div>
+
+                <!-- Description -->
+                <div class="form-group mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <InputTextArea id="description" class="form-control" placeholder="Enter Description of Course" @bind-Value="CourseReadonlyDTO.Description" />
+                    <ValidationMessage For="(() => CourseReadonlyDTO.Description)" />
+                </div>
+
+                <!-- Price -->
+                <div class="form-group mb-3">
+                    <label for="price" class="form-label">Price</label>
+                    <InputNumber id="price" class="form-control" placeholder="Enter Price of Course" @bind-Value="CourseReadonlyDTO.Price" />
+                    <ValidationMessage For="(() => CourseReadonlyDTO.Price)" />
+                </div>
+                <hr />
+
+                <!-- Before Image -->
+                <div class="form-group mb-3">
+                    <div>
+                        <label for="image" class="form-label">Image</label>
+                    </div>
+                    @if (CourseReadonlyDTO.ImageUrl != null)
+                    {
+                        <img class="img-fluid rounded" style="max-width: 100%; height: auto;" src="/Images/Courses/@CourseReadonlyDTO.ImageUrl" alt="Selected Image" />
+                    }
+                </div>
+                <hr />
+
+                <!-- New Image -->
+                <div class="form-group mb-3">
+                    <div>
+                        <label for="image" class="form-label">Select New Image</label>
+                    </div>
+                    <InputFile id="image" OnChange="HandleSelectedFiles" class="form-control-file" />
+                    @if (!string.IsNullOrEmpty(imageDataUrl))
+                    {
+                        <img class="img-fluid rounded mt-2" style="max-width:550px; max-height:400px;" src="@imageDataUrl" alt="Selected Image" />
+                    }
+                </div>
+                <hr />
+
+                <!-- Time -->
+                <div class="form-group mb-3">
+                    <label for="time" class="form-label">Time</label>
+                    <InputText id="time" class="form-control" placeholder="Enter Time of Course" @bind-Value="CourseReadonlyDTO.Time" />
+                    <ValidationMessage For="(() => CourseReadonlyDTO.Time)" />
+                </div>
+                <hr />
+
+                <!-- For -->
+                <div class="form-group mb-3">
+                    <label class="form-label">For:</label>
+                    <InputTextArea class="form-control"
+                                   placeholder="Enter For of Course"
+                                   @bind-Value="CourseReadonlyDTO.For" />
+                    <ValidationMessage For="(() => CourseReadonlyDTO.For)" />
+                </div>
+                <hr />
+
+                <!-- Why Us -->
+                <div class="form-group mb-3">
+                    <label class="form-label">Why Us:</label>
+                    <InputTextArea class="form-control"
+                                   placeholder="Enter Why Us of Course"
+                                   @bind-Value="CourseReadonlyDTO.WhyUs" />
+                    <ValidationMessage For="(() => CourseReadonlyDTO.WhyUs)" />
+                </div>
+                <hr />
+
+
+                <!-- Video Handling -->
+                <div class="form-group mb-3">
+
+                    <label for="videos" class="form-label">Select Videos</label>
+
+                    <InputFile OnChange="HandleVideoSelected" multiple class="form-control-file" />
+
+                    @if (videos != null && videos.Count > 0)
+                    {
+                        <h4 class="mt-3">Selected Videos:</h4>
+                        <ul class="list-group">
+                            @foreach (var video in videos)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>@video.FileName</span>
+                                    <input type="number" class="form-control w-25 mx-2" @bind="video.Order" min="1" max="@videos.Count" />
+                                    <input type="text" class="form-control w-25 mx-2" @bind="video.Title" placeholder="Video Title" />
+                                    <button type="button" class="btn btn-danger btn-sm" @onclick="() => RemoveVideo(video)">Remove</button>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+
+                <hr />
+
+                @if (CourseReadonlyDTO.Videos != null)
+                {
+                    @foreach (var item in CourseReadonlyDTO.Videos)
+                    {
+                        <hr />
+
+                        <div class="p-5 m-5 img-fluid">
+
+                            <h3>Video Player</h3>
+                            <h2>@item.Order</h2>
+                            <h2>@item.VideoUrl</h2>
+
+                            <video width="600" controls>
+
+                                <source src="Videos/Courses/@item.VideoUrl" />
+                                Your browser does not support the video tag.
+                            </video>
+
+                        </div>
+
+
+                        <hr />
+                    }
+                }
+
+
+
+                <!-- Submit Button -->
+                <div class="text-center">
+                    <button class="btn btn-success" type="submit">Update Course</button>
+                </div>
+
+            </EditForm>
+        </div>
+    }
+
+    @if (Message != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @Message
+        </div>
+    }
+
+    @if (isCopying)
+    {
+        <div class="text-center mt-4">
+            <LoadingSpinner></LoadingSpinner>
+            <h2>Please Wait...</h2>
+        </div>
+    }
+
+
+</div>
+
+
+
+
+
+
+
+
+
+
+@code {
+    [Inject] IClient client { get; set; }
+    [Inject] ICourseService CourseService { get; set; }
+    [Inject] NavigationManager NavManager { get; set; }
+
+    [Parameter] public int CourseId { get; set; }
+
+    private bool isCopying = false;
+    private string Message;
+    private string imageDataUrl;
+    private IBrowserFile ImageFormFile { get; set; }
+    private CourseReadonlyDTO CourseReadonlyDTO = new CourseReadonlyDTO();
+    private List<AddVideoDTO> videoDTOs = new List<AddVideoDTO>();
+    private List<VideoModel> videos = new List<VideoModel>();
+    private List<string> previousVideoUrls = new List<string>();
+
+
+    [Inject] IUserService UserService { get; set; }
+    [Inject] ApiAuthenticationStateProvider apiAuthenticationStateProvider { get; set; }
+    private bool IsAdmin = false;
+
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var files = e.GetMultipleFiles();
+        foreach (var file in files)
+        {
+            videos.Add(new VideoModel
+                {
+                    FileName = file.Name,
+                    File = file,
+                    Order = videos.Count + 1 // Default order
+                });
+        }
+    }
+
+    public class VideoModel
+    {
+        public string FileName { get; set; }
+        public IBrowserFile File { get; set; }
+        public int Order { get; set; }
+        public string Title { get; set; }
+    }
+
+    private async Task HandleSelectedFiles(InputFileChangeEventArgs e)
+    {
+        ImageFormFile = e.File;
+        if (ImageFormFile != null)
+        {
+            using var memoryStream = new MemoryStream();
+            await ImageFormFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).CopyToAsync(memoryStream); // Max file size of 10 MB
+            imageDataUrl = $"data:{ImageFormFile.ContentType};base64,{Convert.ToBase64String(memoryStream.ToArray())}";
+        }
+    }
+
+    private async Task HandleVideoSelected(InputFileChangeEventArgs e)
+    {
+        foreach (var file in e.GetMultipleFiles())
+        {
+            videos.Add(new VideoModel
+                {
+                    FileName = file.Name,
+                    File = file,
+                    Order = videos.Count + 1
+                });
+        }
+    }
+
+    private async Task SaveFileAsync(IBrowserFile file, string filePath, long maxSize = 2000 * 1024 * 1024)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+        using var stream = file.OpenReadStream(maxSize);
+        using var fileStream = new FileStream(filePath, FileMode.Create);
+        await stream.CopyToAsync(fileStream);
+    }
+
+    private async Task SaveVideosAsync()
+    {
+
+
+
+        // Handle old video files
+        foreach (var url in previousVideoUrls)
+        {
+            var oldVideoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Videos/Courses", url);
+            if (File.Exists(oldVideoPath)) File.Delete(oldVideoPath);
+        }
+
+        // Save new video files
+        int videoCount = 1;
+        foreach (var video in videos)
+        {
+            var videoFileName = $"{videoCount}_{NameGenerator.GenerateUniqCode()}{Path.GetExtension(video.File.Name)}";
+            var videoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Videos/Courses", videoFileName);
+            await SaveFileAsync(video.File, videoPath);
+
+            videoDTOs.Add(new AddVideoDTO
+                {
+                    Title = video.Title,
+                    Order = video.Order,
+                    VideoUrl = videoFileName
+                });
+
+            videoCount++;
+
+        }
+    }
+
+
+    private string userid;
+    protected override async Task OnInitializedAsync()
+    {
+        AuthenticationState Authstate = await apiAuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = Authstate.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            userid = user.Claims.FirstOrDefault(c => c.Type == "nameid")?.Value;
+            var FirstName = user.Claims.FirstOrDefault(c => c.Type == "name")?.Value;
+            var LastName = user.Claims.FirstOrDefault(c => c.Type == "family_name")?.Value;
+            var PhoneNumber = user.FindFirst(c => c.Type == "sub")?.Value;
+
+
+        }
+
+        var response = await UserService.IsAdmin(Convert.ToInt32(userid));
+        IsAdmin = response.Data;
+
+
+
+
+    }
+
+
+
+    //Load Data
+    protected override async Task OnParametersSetAsync()
+    {
+
+        if (IsAdmin)
+        {
+            CourseReadonlyDTO = await client.GetCourseByIdAsync(CourseId);
+
+            var vids = CourseReadonlyDTO.Videos;
+
+            foreach (var item in vids)
+            {
+                videos.Add(new VideoModel
+                    {
+                        FileName = item.VideoUrl,
+                        Order = item.Order,
+                        Title = item.Title,
+
+                    });
+                previousVideoUrls.Add(item.VideoUrl);
+            }
+        }
+
+    }
+
+    //Send Data To Server
+    private async Task SendData()
+    {
+        isCopying = true;
+        StateHasChanged();
+
+        try
+        {
+            await UpdateImageAsync();
+            await UpdateVideosAsync();
+            await UpdateCourseAsync();
+        }
+        catch (Exception ex)
+        {
+            Message = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            isCopying = false;
+            StateHasChanged();
+            previousVideoUrls.Clear();
+            videos.Clear();
+        }
+    }
+
+    public async Task UpdateImageAsync()
+    {
+        if (ImageFormFile != null)
+        {
+            // Delete old image if exists
+            if (!string.IsNullOrEmpty(CourseReadonlyDTO.ImageUrl))
+            {
+                var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Images/Courses", CourseReadonlyDTO.ImageUrl);
+                if (File.Exists(oldImagePath))
+                {
+                    File.Delete(oldImagePath);
+                }
+            }
+
+            // Save new image
+            CourseReadonlyDTO.ImageUrl = NameGenerator.GenerateUniqCode() + Path.GetExtension(ImageFormFile.Name);
+            string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Images/Courses", CourseReadonlyDTO.ImageUrl);
+            using (var stream = ImageFormFile.OpenReadStream())
+            {
+                using (var fileStream = new FileStream(imagePath, FileMode.Create))
+                {
+                    await stream.CopyToAsync(fileStream);
+                }
+            }
+        }
+    }
+
+    public async Task UpdateVideosAsync()
+    {
+        var newVideoUrls = new List<string>();
+
+        foreach (var video in videos.OrderBy(v => v.Order))
+        {
+            if (video.File != null)
+            {
+                var uniqueFileName = NameGenerator.GenerateUniqCode() + Path.GetExtension(video.FileName);
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Videos/Courses", uniqueFileName);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+                using (var stream = video.File.OpenReadStream(2000 * 1024 * 1024)) // Limit size to 2000 MB
+                {
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await stream.CopyToAsync(fileStream);
+                    }
+                }
+                newVideoUrls.Add(uniqueFileName);
+                videoDTOs.Add(new AddVideoDTO
+                    {
+                        VideoUrl = uniqueFileName,
+                        Order = video.Order,
+                        Title = video.Title,
+                    });
+            }
+            else
+            {
+                newVideoUrls.Add(video.FileName);
+
+                videoDTOs.Add(new AddVideoDTO
+                    {
+                        VideoUrl = video.FileName,
+                        Order = video.Order,
+                        Title = video.Title,
+                    });
+            }
+        }
+
+        // Delete old videos not present in new list
+        var videosToDelete = previousVideoUrls.Except(newVideoUrls);
+        foreach (var oldVideoUrl in videosToDelete)
+        {
+            var oldVideoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Videos/Courses", oldVideoUrl);
+            if (File.Exists(oldVideoPath))
+            {
+                File.Delete(oldVideoPath);
+            }
+        }
+    }
+
+    public async Task UpdateCourseAsync()
+    {
+        var editCourseDTO = new EditCourseDTO
+            {
+                Id = CourseReadonlyDTO.Id,
+                Author = CourseReadonlyDTO.Author,
+                Title = CourseReadonlyDTO.Title,
+                Time = CourseReadonlyDTO.Time,
+                Description = CourseReadonlyDTO.Description,
+                Price = CourseReadonlyDTO.Price,
+                ImageUrl = CourseReadonlyDTO.ImageUrl,
+                Videos = videoDTOs,
+                For = CourseReadonlyDTO.For,
+                WhyUs = CourseReadonlyDTO.WhyUs,
+            };
+
+        var response = await CourseService.EditCourse(editCourseDTO);
+        if (response.Data == false)
+        {
+            Message = "Error updating course";
+        }
+        else
+        {
+            Message = "Course updated successfully";
+        }
+    }
+
+
+
+
+    private void RemoveVideo(VideoModel video)
+    {
+        videos.Remove(video);
+        previousVideoUrls.Add(video.FileName); // Collect old video URLs for deletion
+    }
+
+}

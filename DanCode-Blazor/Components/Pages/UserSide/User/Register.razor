@@ -1,0 +1,295 @@
+﻿@page "/Register"
+@using Microsoft.AspNetCore.Authorization
+@rendermode InteractiveServer
+@inject IClient httpclient;
+@inject NavigationManager NavManger;
+
+
+<PageTitle> ثبت نام | آکادمی فوتبال ایران </PageTitle>
+<title> ثبت نام | آکادمی فوتبال ایران </title>
+
+
+
+
+<div class="d-flex justify-content-center my-2 min-vh-100">
+
+    <div class="card shadow-lg p-2" style="max-width: 400px; width: 100%;">
+
+        <div class="card-body">
+
+            @if (errorMessage != null)
+            {
+
+                <div class="alert alert-danger" role="alert">
+
+
+                    @errorMessage
+
+
+                </div>
+
+
+            }
+
+
+
+            <div>
+                <h3 class="text-center mb-2">ثبت نام</h3>
+                <hr />
+            </div>
+
+
+            <EditForm Model="user" OnValidSubmit="SendSMS">
+
+                <DataAnnotationsValidator></DataAnnotationsValidator>
+
+                <div class="form-group mb-3">
+
+                    <label for="نام خانوادگی" class="form-label">نام و نام خانوادگی</label>
+                    <InputText readonly="@isButtonDisabled" id="نام خانوادگی" class="form-control" @bind-Value="user.FullName" placeholder="لطفا نام و نام خانوادگی خود را وارد کنید"></InputText>
+
+                </div>
+
+                <div class="form-group mb-3">
+
+                    <label for="شماره موبایل" class="form-label">شماره موبایل</label>
+                    <InputText readonly="@isButtonDisabled" id="شماره موبایل" class="form-control" @bind-Value="user.PhoneNumber" placeholder="لطفا شماره عبور خود را وارد کنید"></InputText>
+
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="password" class="form-label">رمز عبور</label>
+                    <InputText readonly="@isButtonDisabled" id="password" type="password" class="form-control" @bind-Value="user.Password" placeholder="لطفا رمز عبور خود را وارد کنید"></InputText>
+
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="password" class="form-label"> تکرار رمز عبور</label>
+                    <InputText readonly="@isButtonDisabled" id="password" type="password" class="form-control" @bind-Value="user.RePassword" placeholder="لطفا رمز عبور خود را تکرار کنید"></InputText>
+                </div>
+
+
+                <button type="submit" class="btn btn-custom w-100" disabled="@isButtonDisabled"> @buttonText </button>
+
+                @if (countdown > 1)
+                {
+
+                    <hr />
+                    <div class="form-group mb-3">
+                        <label for="شماره موبایل" class="form-label">ورود کد تایید</label>
+                        <InputText class="form-control" @bind-Value="VerifyCode" placeholder="لطفا کد تایید را وارد کنید "></InputText>
+                    </div>
+
+                    <Button Type="ButtonType.Button" @onclick="HandleRegister" class="btn btn-custom w-100">
+                        ثبت نام
+                    </Button>
+                    <hr />
+                }
+
+
+            </EditForm>
+
+
+
+
+            <div class="text-center mt-3">
+                <a href="/LogIn" class="text-muted">حساب کاربری دارید؟</a>
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<style>
+    .btn-custom {
+        background-color: #0b6131 !important;
+        color: white !important;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-custom:hover {
+            background-color: #094d23 !important;
+            color: white !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+    /* Style the card to give it a modern look */
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+
+    .form-control {
+        border-radius: 5px;
+    }
+</style>
+
+
+
+
+
+
+
+
+
+@code {
+
+    private UserRegisterDTO user = new UserRegisterDTO();
+    string errorMessage;
+
+    private System.Threading.Timer? timer; // تعریف تایمر به صورت متغیر کلاسی
+    private bool isButtonDisabled = false;
+    private string buttonText = "ارسال کد تایید";
+    private int countdown = 0;
+    private string VerifyCode;
+
+
+
+
+    private async Task SendSMS()
+    {
+        try
+        {
+            // var isExist = await httpclient.PhoneNumberIsExistAsync(user.PhoneNumber);
+
+            // if (isExist)
+            // {
+            //     errorMessage = "این شماره موبایل قبلا در سایت ثبت نام شده است";
+            //     return;
+            // }
+
+            if (user.Password != user.RePassword)
+            {
+                errorMessage = "رمز عبور و تکرار رمز عبور متفاوت هستند";
+
+                return;
+            }
+
+            //Send Sms
+            var response = await httpclient.SendOtpAsync(user.PhoneNumber, false);
+
+            if (response.IsSuccess == false)
+            {
+
+                errorMessage = response.ErrorMessage;
+
+            }
+            else
+            {
+
+
+                isButtonDisabled = true;
+                await StartCountdown();
+
+            }
+        }
+        catch
+        {
+
+
+        }
+
+
+
+
+
+    }
+
+    private async Task StartCountdown()
+    {
+        countdown = 120;
+        isButtonDisabled = true; // دکمه غیرفعال شود
+        buttonText = $"ارسال مجدد کد تایید در {countdown} ثانیه";
+
+        // ایجاد تایمر
+        timer = new System.Threading.Timer(async _ =>
+        {
+            countdown--;
+            if (countdown == 0)
+            {
+                isButtonDisabled = false; // دکمه دوباره فعال شود
+                buttonText = "ارسال کد تایید";
+
+                await InvokeAsync(() => StateHasChanged()); // به‌روزرسانی UI
+
+                VerifyCode = "";
+                // تایمر را متوقف کنید و آن را آزاد کنید
+                timer?.Dispose();
+            }
+            else
+            {
+                buttonText = $"ارسال مجدد کد تایید در {countdown} ثانیه";
+                await InvokeAsync(() => StateHasChanged()); // به‌روزرسانی UI
+            }
+        }, null, 1000, 1000); // تایمر هر ثانیه شمارنده را کاهش می‌دهد
+    }
+
+    private async Task HandleRegister()
+    {
+
+
+
+
+
+        try
+        {
+
+
+            //if otp verifyed register
+
+            RegisterVerifyOtpModel model = new RegisterVerifyOtpModel()
+                {
+                    FullName = user.FullName,
+                    PhoneNumber = user.PhoneNumber,
+                    Password = user.Password,
+                    RePassword = user.RePassword,
+                    OtpCode = VerifyCode,
+
+                };
+
+            var result = await httpclient.VerifyOtpRegisterAsync(model);
+
+            if (result)
+            {
+                await NavigateToLogIn();
+            }
+            else
+            {
+                errorMessage = "کد تایید اشتباه وارد شده است";
+            }
+
+
+        }
+        catch (ApiException ex)
+        {
+
+            if (ex.StatusCode >= 200 && ex.StatusCode <= 299)
+            {
+                await NavigateToLogIn();
+            }
+
+
+            errorMessage = "مشکلی رخ داده است";
+        }
+        catch (Exception ex)
+        {
+
+
+        }
+
+
+    }
+
+    private async Task NavigateToLogIn()
+    {
+        NavManger.NavigateTo("/login");
+
+    }
+
+
+}

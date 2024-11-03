@@ -1,0 +1,16 @@
+﻿
+@rendermode InteractiveServer
+@inject NavigationManager NavManger;
+
+<h3>RedirectToLogin</h3>
+
+@code {
+
+    protected override void OnInitialized()
+    {
+
+        NavManger.NavigateTo("User/LogIn");
+
+    }
+
+}

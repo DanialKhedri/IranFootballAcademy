@@ -1,0 +1,215 @@
+﻿@page "/AdminSide/GetAllProducts"
+
+@using DanCode_Blazor.Components.Layout
+@using DanCode_Blazor.Components.Pages.Utilites
+@using DanCode_Blazor.Services.Base.interfaces;
+@using Microsoft.AspNetCore.Http.Extensions;
+@using global::Services.Base.interfaces
+@layout AdminPanelLayout;
+
+<style>
+    .divbackground {
+        background-color: #0b6131 !important;
+        color: white;
+    }
+
+    .formbackground {
+        background-color: #F7F9F2 !important;
+    }
+
+    .but {
+        background-color: #0b6131 !important;
+    }
+
+    .table thead th {
+        background-color: #0b6131;
+        color: white;
+        text-align: center;
+    }
+
+    .table tbody td, .table tbody th {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f2f2f2;
+    }
+
+    .btn-custom {
+        margin: 0 2px;
+    }
+
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary {
+        background-color: #0b6131 !important;
+        border: none;
+    }
+
+    .btn-danger {
+        background-color: #ff4d4d !important;
+        border: none;
+    }
+
+        .btn-primary:hover, .btn-danger:hover {
+            opacity: 0.9;
+        }
+</style>
+
+<div class="container mt-4">
+
+    <div>
+        <h2 class="text-center m-2  p-3 divbackground rounded">Products</h2>
+        <hr />
+
+        <div class="my-3">
+            <Button @onclick="GoToAddProduct" Class="btn btn-primary but">Add New Product</Button>
+        </div>
+    </div>
+
+    @if (Products == null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
+        <div class="card p-4 mb-4">
+
+            <div class="table-responsive border p-2 m-2 rounded">
+
+                <table class="table table-striped table-bordered table-hover">
+
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Products)
+                        {
+                            <tr>
+                                <th>@item.Id</th>
+                                <td>@item.Name</td>
+                                <td>@item.Price</td>
+                                <td>
+                                    <Button Class="btn btn-primary btn-sm btn-custom" @onclick="(()=>GoToEditProduct(item.Id))">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </Button>
+                                    <Button Class="btn btn-danger btn-sm btn-custom" @onclick="(()=>ShowModal())">
+                                        <i class="bi bi-trash"></i> Remove
+                                    </Button>
+                                    <TestModal @ref="myModal" Title="Remove Course" ShowCloseButton="true" ShowSaveButton="true" OnClose="OnModalClose" OnSave="(()=>OnModalSave(item.Id))">
+                                        <p>Are You Sure To delete Course @item.Name</p>
+                                    </TestModal>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+
+
+            <hr />
+        </div>
+    }
+</div>
+
+@code {
+
+
+    [Inject] IClient client { get; set; }
+    [Inject] NavigationManager Navmanger { get; set; }
+    [Inject] IProductService ProductService { get; set; }
+
+
+
+    ICollection<ProductReadOnlyDTO> Products { get; set; }
+    private string? Message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Products = await client.GetAllProducutsAsync();
+
+    }
+
+
+    public async Task LoadProducts()
+    {
+     
+        
+        Products = await client.GetAllProducutsAsync();
+
+
+
+
+
+    }
+
+
+    private async Task RemoveProduct(int ProductId)
+    {
+        var response = await ProductService.RemoveProduct(ProductId);
+
+        if (response.Data == true)
+        {
+            Message = "Course successfully removed";
+            await LoadProducts();
+
+        }
+        else
+        {
+            Message = "Error";
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task GoToEditProduct(int ProductId)
+    {
+        Navmanger.NavigateTo($"/AdminSide/EditProduct/{ProductId}");
+    }
+
+    private async Task GoToAddProduct()
+    {
+        Navmanger.NavigateTo("/AdminSide/AddProduct");
+    }
+
+
+
+
+
+
+
+
+
+    //Modal
+
+    private TestModal myModal;
+
+    private void ShowModal()
+    {
+        myModal.Open();
+    }
+
+    private void OnModalClose()
+    {
+        // Handle modal close event here
+    }
+
+    private async void OnModalSave(int ProductId)
+    {
+
+        await RemoveProduct(ProductId);
+
+    }
+
+
+}

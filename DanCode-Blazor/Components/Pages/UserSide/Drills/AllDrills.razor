@@ -1,0 +1,186 @@
+﻿@page "/Drills"
+@using DanCode_Blazor.Components.Pages.Utilites
+@rendermode InteractiveServer
+
+
+<PageTitle>تمرین های طراحی شده | آکادمی فوتبال ایران</PageTitle>
+<title>تمرین های طراحی شده | آکادمی فوتبال ایران</title>
+
+<style>
+    .divbackground {
+        background-color: #0b6131 !important;
+        color: white;
+        padding: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .course-card {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        background: white;
+        margin-bottom: 20px;
+        transition: transform 0.3s ease;
+        padding: 20px;
+        display: flex;
+        flex-direction: row-reverse; /* جهت عکس و متن */
+        cursor: pointer;
+    }
+
+        .course-card:hover {
+            transform: scale(1.02);
+        }
+
+
+    .btn-custom {
+        background-color: #0b6131 !important;
+        color: white !important;
+        border: 2px solid transparent;
+        padding: 10px 20px;
+        border-radius: 5px;
+        transition: all 0.3s ease; /* اضافه کردن ترانزیشن برای تغییرات نرم‌تر */
+    }
+
+
+        .btn-custom:hover {
+            background-color: #094d23 !important; /* تغییر رنگ پس‌زمینه */
+            color: #fff !important; /* حفظ رنگ متن */
+            border-color: #0b6131; /* اضافه کردن حاشیه */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* اضافه کردن سایه برای عمق */
+            transform: translateY(-3px); /* اضافه کردن افکت شناور به دکمه */
+        }
+</style>
+
+
+<div class="divbackground mt-3">
+
+    <h2>تمرین های طراحی شده</h2>
+
+</div>
+
+<hr />
+
+<div class="m-1 p-3 border rounded shadow-sm bg-light description-box">
+
+    <p class="text-justify description-text">
+
+        تمرین‌های طراحی شده تمرین‌های طراحی شده تمرین‌های طراحی شده تمرین‌های طراحی شده تمرین‌های طراحی شده تمرین‌های طراحی شده تمرین‌های طراحی شده
+        تمرین‌های طراحی شده تمرین‌های طراحی شده تمرین‌های طراحی شده تمرین‌های طراحی شده تمرین‌های طراحی شده تمرین‌های طراحی شده تمرین‌های طراحی شده
+        تمرین‌های طراحی شده تمرین‌های طراحی شده تمرین‌های طراحی شده تمرین‌های طراحی شده تمرین‌های طراحی شده
+
+    </p>
+
+    <Button Class="btn-custom" @onclick="GoToProducts">خرید بسته تمرین ها</Button>
+
+</div>
+
+
+@if (IsWait)
+{
+    <div class="text-center">
+
+        <LoadingSpinner></LoadingSpinner>
+
+    </div>
+
+}
+else
+{
+
+    @if (Drills == null || Drills.Count == 0)
+    {
+        <div class="text-center">
+
+            <h2>هیچ تمرینی برای نمایش وجود ندارد </h2>
+
+        </div>
+    }
+    else
+    {
+
+
+
+
+
+
+
+        <div class="container">
+            <!-- استفاده از container-fluid برای ریسپانسیو بهتر -->
+
+            <div class="row no-gutters">
+                <!-- استفاده از no-gutters برای حذف فاصله‌های اضافی -->
+                @foreach (var item in Drills)
+                {
+                    <div class="col-12 course-card card mb-3" @onclick="(()=> GotoDrillById(item.Id))">
+
+                        <div class="row no-gutters">
+
+                            <!-- حذف فاصله‌های اضافی بین ستون‌ها -->
+
+                            <div class="col-md-4">
+                                <img src="/Images/Drills/@item.Image" class="img-fluid rounded-start" alt="Image">
+                            </div>
+
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">@item.Title</h5>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                }
+            </div>
+
+        </div>
+
+        <hr />
+
+    }
+
+}
+
+
+@code {
+
+    [Inject] IClient Client { get; set; }
+    [Inject] NavigationManager Navmanger { get; set; }
+
+    ICollection<DrillReadonlyDTO> Drills;
+
+    private bool IsWait = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsWait = true;
+        try
+        {
+            Drills = await Client.GetAllDrillsAsync();
+
+        }
+        catch
+        {
+
+
+        }
+        finally
+        {
+            IsWait = false;
+        }
+
+    }
+
+    private async Task GotoDrillById(int DrillId)
+    {
+        Navmanger.NavigateTo($"/Drills/{DrillId}");
+    }
+
+    private async Task GoToProducts()
+    {
+        Navmanger.NavigateTo($"/Products");
+    }
+
+}

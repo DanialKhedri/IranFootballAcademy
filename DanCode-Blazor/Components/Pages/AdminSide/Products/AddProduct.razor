@@ -1,0 +1,276 @@
+﻿@page "/AdminSide/AddProduct"
+@rendermode InteractiveServer
+@layout AdminPanelLayout;
+
+@using Application.Extensions.Generators.NameGenerator
+@using DanCode_Blazor.Components.Layout
+@using DanCode_Blazor.Components.Pages.Utilites
+@using DanCode_Blazor.Services.Base.interfaces
+@using global::Services.Base.interfaces
+
+<PageTitle>Add Product</PageTitle>
+
+<style>
+    .divbackground {
+        background-color: #0b6131 !important;
+        color: white;
+    }
+
+    .formbackground {
+        background-color: #F7F9F2 !important;
+    }
+
+    .form-label {
+        background-color: #0b6131;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 3px;
+        display: inline-block;
+        width: 100%;
+        text-align: left;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .form-control, .form-control-file {
+        border: 1px solid #0b6131;
+        border-radius: 5px;
+        box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+
+        .form-control:focus, .form-control-file:focus {
+            border-color: #0b6131;
+            box-shadow: 0 0 8px rgba(11, 97, 49, 0.8);
+        }
+
+    .btn-custom {
+        background-color: #0b6131 !important;
+        color: white !important;
+    }
+
+        .btn-custom:hover {
+            background-color: #094d23 !important;
+        }
+</style>
+
+<div class="container mt-4">
+
+    <div>
+        <h2 class="text-center m-2 p-3 divbackground rounded">Add Product</h2>
+        <hr />
+    </div>
+
+    <div class="card p-4 mb-4 formbackground">
+
+        <EditForm Model="AddProductDto" OnValidSubmit="SendData">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <!-- Name -->
+            <div class="form-group mb-3">
+                <label class="form-label">Name</label>
+                <InputText class="form-control"
+                           placeholder="Enter Name of Product"
+                           @bind-Value="AddProductDto.Name" />
+                <ValidationMessage For="(() => AddProductDto.Name)" />
+            </div>
+            <hr />
+
+            <!-- Description -->
+            <div class="form-group mb-3">
+                <label class="form-label">Description</label>
+                <InputTextArea class="form-control"
+                               placeholder="Enter Description of Product"
+                               @bind-Value="AddProductDto.Description" />
+                <ValidationMessage For="(() => AddProductDto.Description)" />
+            </div>
+            <hr />
+
+            <!-- Price -->
+            <div class="form-group mb-3">
+                <label class="form-label">Price</label>
+                <InputNumber class="form-control"
+                             placeholder="Enter Price of Product"
+                             @bind-Value="AddProductDto.Price" />
+                <ValidationMessage For="(() => AddProductDto.Price)" />
+            </div>
+            <hr />
+
+
+
+            <!-- Image -->
+            <div class="form-group mb-3">
+                <label class="form-label">Select Image</label>
+                <InputFile OnChange="HandleSelectedImageFile" class="form-control-file" />
+                @if (!string.IsNullOrEmpty(imageDataUrl))
+                {
+                    <img class="img-fluid p-3" src="@imageDataUrl" alt="Selected Image" />
+                }
+            </div>
+            <hr />
+
+            <!-- File -->
+            <div class="form-group mb-3">
+
+                <label class="form-label">Select File</label>
+                <InputFile OnChange="HandleSelectedProductFile" class="form-control-file" />
+
+
+            </div>
+            <hr />
+
+
+
+            <!-- Submit Button -->
+            <div class="text-center">
+                <button class="btn btn-custom" type="submit">Add Product</button>
+            </div>
+
+        </EditForm>
+
+    </div>
+
+     @if (Message != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @Message
+        </div>
+    }
+
+    @if (isCopying)
+    {
+        <div class="text-center mt-4">
+            <LoadingSpinner></LoadingSpinner>
+            <h2>Please Wait...</h2>
+        </div>
+    }
+
+</div>
+
+
+
+
+@code {
+
+    [Inject] IUserService userservice { get; set; }
+    [Inject] IProductService ProductService { get; set; }
+
+    [Inject] NavigationManager Navmanger { get; set; }
+
+    private bool isCopying = false;
+    private string Message;
+
+    private string imageDataUrl;
+    private string ProductFileDataUrl;
+
+    private IBrowserFile ImageFormFile { get; set; }
+    private IBrowserFile ProductFile { get; set; }
+
+    private CreateProductDTO AddProductDto = new CreateProductDTO();
+
+
+    //Image
+    private async Task HandleSelectedImageFile(InputFileChangeEventArgs e)
+    {
+        ImageFormFile = e.File;
+
+        if (ImageFormFile != null)
+        {
+            using var memoryStream = new MemoryStream();
+            await ImageFormFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).CopyToAsync(memoryStream); // Maximum file size of 10 MB
+            imageDataUrl = $"data:{ImageFormFile.ContentType};base64,{Convert.ToBase64String(memoryStream.ToArray())}";
+        }
+
+    }
+
+    //File
+    private async Task HandleSelectedProductFile(InputFileChangeEventArgs e)
+    {
+        ProductFile = e.File;
+
+        if (ProductFile != null)
+        {
+            using var memoryStream = new MemoryStream();
+            await ImageFormFile.OpenReadStream(maxAllowedSize: 2000 * 1024 * 1024).CopyToAsync(memoryStream); // Maximum file size of 10 MB
+            ProductFileDataUrl = $"data:{ImageFormFile.ContentType};base64,{Convert.ToBase64String(memoryStream.ToArray())}";
+        }
+
+    }
+
+    private async Task SendData()
+    {
+        // Set the isCopying flag to true to show the message
+        isCopying = true;
+
+
+        try
+        {
+
+
+            #region AddImage
+
+            if (ImageFormFile != null)
+            {
+                // Save New Image
+
+                AddProductDto.ImageUrl = NameGenerator.GenerateUniqCode() + Path.GetExtension(ImageFormFile.Name);
+                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Images/Products", AddProductDto.ImageUrl);
+
+                await SaveFileAsync(ImageFormFile, imagePath);
+
+            }
+
+            #endregion
+
+            #region AddFile
+
+            if (ProductFile != null)
+            {
+                // Save New Image
+
+                AddProductDto.FileUrl = NameGenerator.GenerateUniqCode() + Path.GetExtension(ProductFile.Name);
+                string FilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Files/Products", AddProductDto.FileUrl);
+
+                await SaveFileAsync(ProductFile, FilePath);
+
+
+            }
+
+            #endregion
+
+
+
+            var response = await ProductService.AddProduct(AddProductDto);
+
+            if (response.Data == true)
+            {
+                Message = "Product Added";
+            }
+            else
+                Message = "Error";
+        }
+        catch
+        {
+
+            Message = "Error";
+        }
+        finally
+        {
+            isCopying = false;
+            StateHasChanged();
+        }
+    }
+
+
+    private async Task SaveFileAsync(IBrowserFile file, string filePath)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+        using var stream = file.OpenReadStream(900 * 1024 * 1024); // Limit to 900 MB
+        using var fileStream = new FileStream(filePath, FileMode.Create);
+        await stream.CopyToAsync(fileStream);
+    }
+
+
+}

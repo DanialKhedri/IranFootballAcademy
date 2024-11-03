@@ -1,0 +1,169 @@
+﻿@page "/UserPanel"
+@using DanCode_Blazor.Providers
+@using DanCode_Blazor.Services.Base.interfaces
+@rendermode InteractiveServer
+
+
+<PageTitle>آکادمی فوتبال ایران</PageTitle>
+<title>آکادمی فوتبال ایران</title>
+
+
+
+
+
+
+<style>
+
+    hr {
+        color: gray;
+    }
+
+   
+
+    .sidebar {
+        background-color: #212529;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+        padding: 20px;
+    }
+
+        .sidebar a {
+            padding: 15px 20px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #f8f9fa;
+            display: block;
+            transition: 0.3s;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+
+            .sidebar a:hover {
+                background-color: #0b6131;
+                color: white;
+            }
+
+        .sidebar .dropdown-menu {
+            background-color: #343a40;
+            border-radius: 0 0 4px 4px;
+        }
+
+        .sidebar .dropdown-item {
+            color: #f8f9fa;
+        }
+
+            .sidebar .dropdown-item:hover {
+                background-color: #0b6131;
+            }
+
+        .sidebar .dropdown-toggle::after {
+            color: #f8f9fa;
+        }
+
+</style>
+
+<div class="container-fluid">
+
+    <div class="row mt-2">
+
+        <!-- Sidebar -->
+        <div class="col-12 col-md-4 col-lg-3 sidebar">
+
+            @if (!string.IsNullOrEmpty(username))
+            {
+                <a class=""><i class="bi bi-person-fill"></i> سلام @username گرامی </a>
+                <hr />
+            }
+            else
+            {
+                <a class=""><i class="bi bi-person-fill"></i> سلام کاربر گرامی </a>
+            }
+
+            <a href="/UserPanel/UserCourses"><i class="bi bi-book"></i> دوره های خریداری شده </a>
+            <hr />
+
+            <a href="/UserPanel/UserProducts"><i class="bi bi-box-seam"></i> محصولات خریداری شده </a>
+            <hr />
+
+            <a href="/UserPanel/UserOrders"><i class="bi bi-file-earmark-text"></i> سفارشات </a>
+            <hr />
+
+
+
+            <a href="/User/LogOut"><i class="bi bi-box-arrow-right"></i> خروج از حساب کاربری </a>
+            <hr />
+
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-12 col-md-8 col-lg-9">
+            <main class="p-3">
+                <!-- محتوای اصلی اینجا قرار می‌گیرد -->
+
+
+
+
+
+                <h2>به پنل کاربری خوش اومدید</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </main>
+        </div>
+
+    </div>
+
+</div>
+
+
+
+@code {
+
+
+    [Inject] IClient Client { get; set; }
+    [Inject] NavigationManager Navmanger { get; set; }
+    [Inject] ApiAuthenticationStateProvider apiAuthenticationStateProvider { get; set; }
+
+
+    private string userid;
+    private string username;
+
+
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthenticationState authState = await apiAuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user?.Identity?.IsAuthenticated == true)
+        {
+            userid = user.Claims.FirstOrDefault(c => c.Type == "nameid")?.Value;
+            username = user.Claims.FirstOrDefault(c => c.Type == "name")?.Value;
+
+        }
+
+
+
+    }
+
+
+
+}

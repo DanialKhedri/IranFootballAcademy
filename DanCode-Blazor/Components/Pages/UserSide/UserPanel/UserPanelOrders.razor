@@ -1,0 +1,320 @@
+﻿@page "/UserPanel/UserOrders"
+@using DanCode_Blazor.Providers
+@using DanCode_Blazor.Services.Base.interfaces
+@rendermode InteractiveServer
+
+
+<PageTitle>آکادمی فوتبال ایران</PageTitle>
+<title>آکادمی فوتبال ایران</title>
+
+
+<style>
+    .divbackground {
+        background-color: #0b6131 !important;
+        color: white;
+        padding: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .course-card {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        background: white;
+        margin-bottom: 20px;
+        transition: transform 0.3s ease;
+        padding: 20px;
+        display: flex;
+        flex-direction: row-reverse; /* جهت عکس و متن */
+        cursor: pointer;
+    }
+
+        .course-card:hover {
+            transform: scale(1.02);
+        }
+
+    hr {
+        color: gray;
+    }
+
+    .sidebar {
+        background-color: #212529;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+        padding: 20px;
+    }
+
+        .sidebar a {
+            padding: 15px 20px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #f8f9fa;
+            display: block;
+            transition: 0.3s;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+
+            .sidebar a:hover {
+                background-color: #0b6131;
+                color: white;
+            }
+
+        .sidebar .dropdown-menu {
+            background-color: #343a40;
+            border-radius: 0 0 4px 4px;
+        }
+
+        .sidebar .dropdown-item {
+            color: #f8f9fa;
+        }
+
+            .sidebar .dropdown-item:hover {
+                background-color: #0b6131;
+            }
+
+        .sidebar .dropdown-toggle::after {
+            color: #f8f9fa;
+        }
+
+    .table thead th {
+        background-color: #0b6131;
+        color: white;
+        text-align: center;
+    }
+
+    .table tbody td, .table tbody th {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f2f2f2;
+    }
+
+    .btn-custom {
+        margin: 0 2px;
+    }
+
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary {
+        background-color: #0b6131 !important;
+        border: none;
+    }
+
+    .btn-danger {
+        background-color: #ff4d4d !important;
+        border: none;
+    }
+
+        .btn-primary:hover, .btn-danger:hover {
+            opacity: 0.9;
+        }
+
+    /* Modal specific styling */
+    .modal-content {
+        border-radius: 10px;
+    }
+
+    .modal-header {
+        background-color: #0b6131;
+        color: white;
+        border-bottom: none;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row mt-2">
+        <!-- Sidebar -->
+        <div class="col-12 col-md-4 col-lg-3 sidebar">
+            @if (!string.IsNullOrEmpty(username))
+            {
+                <a class=""><i class="bi bi-person-fill"></i> سلام @username گرامی </a>
+                <hr />
+            }
+            else
+            {
+                <a class=""><i class="bi bi-person-fill"></i> سلام کاربر گرامی </a>
+            }
+         
+
+            <hr />
+            <a href="/UserPanel/UserCourses"><i class="bi bi-book"></i> دوره های خریداری شده </a>
+            <hr />
+
+            <a href="/UserPanel/UserProducts"><i class="bi bi-box-seam"></i> محصولات خریداری شده </a>
+            <hr />
+
+            <a href="/UserPanel/UserOrders"><i class="bi bi-file-earmark-text"></i> سفارشات </a>
+            <hr />
+
+            <a href="/User/LogOut"><i class="bi bi-box-arrow-right"></i> خروج از حساب کاربری </a>
+            <hr />
+        </div>
+
+        @if (IsWait)
+        {
+            <DanCode_Blazor.Components.Pages.Utilites.LoadingSpinner></DanCode_Blazor.Components.Pages.Utilites.LoadingSpinner>
+        }
+        else
+        {
+            <!-- Main Content -->
+            <div class="col-12 col-md-8 col-lg-9">
+                <div class="mx-2 mt-1 divbackground"><h4>سفارش های ثبت شده</h4></div>
+                @if (OrderDTOs == null || OrderDTOs.Count == 0)
+                {
+                    <div class="card p-4 my-4">
+                        <h3>هیچ سفارشی برای شما ثبت نشده است</h3>
+                    </div>
+                }
+                else
+                {
+                    <div class="card p-4 my-4">
+                        <div class="table-responsive border p-2 m-2 rounded">
+                            <table class="table table-striped table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">تاریخ</th>
+                                        <th scope="col">مبلغ</th>
+                                        <th scope="col">عملیات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in OrderDTOs)
+                                    {
+                                        <tr>
+                                            <td>@item.CreateTime</td>
+                                            <td>@item.Sum</td>
+                                            <td>
+                                                <Button Class="btn btn-primary btn-sm btn-custom" @onclick="() => ShowOrderDetails(item.Id)">
+                                                    <i class="bi bi-box-arrow-in-right"></i> مشاهده جزئیات
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Modal -->
+    @if (showModal)
+    {
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">جزئیات سفارش</h5>
+                   
+                    </div>
+                    <div class="modal-body">
+                        @if (orderDetails == null)
+                        {
+                            <DanCode_Blazor.Components.Pages.Utilites.LoadingSpinner />
+                        }
+                        else
+                        {
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>نام محصول</th>
+                                        <th>قیمت</th>
+                                        <th>نوع</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var detail in orderDetails)
+                                    {
+                                        <tr>
+                                            <td>@detail.Title</td>
+                                            <td>@detail.Price</td>
+                                            <td>@detail.ItemType</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseModal">بستن</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Inject] IClient Client { get; set; }
+    [Inject] NavigationManager Navmanger { get; set; }
+    [Inject] ApiAuthenticationStateProvider apiAuthenticationStateProvider { get; set; }
+    [Inject] IOrderService _OrderService { get; set; }
+
+    private bool IsWait = false;
+    private string userid;
+    private string username;
+    private ICollection<OrderDTO> OrderDTOs;
+    private ICollection<OrderDetailDTO> orderDetails;
+    private bool showModal = false;
+    private int currentOrderId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsWait = true;
+
+        try
+        {
+            AuthenticationState authState = await apiAuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user?.Identity?.IsAuthenticated == true)
+            {
+                userid = user.Claims.FirstOrDefault(c => c.Type == "nameid")?.Value;
+                username = user.Claims.FirstOrDefault(c => c.Type == "name")?.Value;
+
+                if (!string.IsNullOrEmpty(userid))
+                {
+                    // دریافت سفارش‌های نهایی‌شده توسط کاربر
+                    var response = await _OrderService.GetFinalizedOrderByUserId(int.Parse(userid));
+                    OrderDTOs = response.Data;
+                }
+                else
+                {
+                    // مدیریت خطا در صورت عدم یافتن userId
+                }
+            }
+        }
+        catch
+        {
+            // مدیریت خطا
+        }
+        finally
+        {
+            IsWait = false;
+        }
+    }
+
+    private async Task ShowOrderDetails(int orderId)
+    {
+        showModal = true;
+        currentOrderId = orderId;
+
+        // دریافت جزئیات سفارش از API
+        var response = await _OrderService.GetOrderDetailsByOrderId(orderId);
+        orderDetails = response.Data;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+        orderDetails = null;
+    }
+}

@@ -1,0 +1,167 @@
+﻿@page "/AdminSide/AddDrillType"
+@using DanCode_Blazor.Components.Layout
+@rendermode InteractiveServer
+@layout AdminPanelLayout;
+
+<PageTitle>Add Drill Type</PageTitle>
+
+<style>
+    .divbackground {
+        background-color: #0b6131 !important;
+        color: white;
+    }
+
+    .formbackground {
+        background-color: #F7F9F2 !important;
+    }
+
+    .form-label {
+        /*     background-color: #0b6131;
+                    color: white; */
+        padding: 5px 10px;
+        border-radius: 3px;
+        display: inline-block;
+        width: 100%;
+        text-align: left;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .form-control, .form-control-file {
+        border: 1px solid #0b6131;
+        border-radius: 5px;
+        box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+
+        .form-control:focus, .form-control-file:focus {
+            border-color: #0b6131;
+            box-shadow: 0 0 8px rgba(11, 97, 49, 0.8);
+        }
+
+    .btn-custom {
+        background-color: #0b6131 !important;
+        color: white !important;
+    }
+
+        .btn-custom:hover {
+            background-color: #094d23 !important;
+        }
+</style>
+
+
+<div class="containre mt-4">
+
+    <div>
+        <h2 class="text-center m-2 p-3 divbackground rounded">Add Drill Type</h2>
+        <hr />
+    </div>
+
+    <div class="card p-4 mb-4 formbackground">
+
+
+        <EditForm Model="drilltypedto" OnValidSubmit="adddrilltypedto">
+
+
+            <DataAnnotationsValidator></DataAnnotationsValidator>
+            <ValidationSummary></ValidationSummary>
+
+
+
+            <!--Unique Name-->
+            <div class="form-group mb-3">
+
+                <label>DrillType UniqueName</label>
+                <input class="form-control"
+                       placeholder="Enter UniqueName of DrillType ex: Possesion"
+                       @bind-value="drilltypedto.UniqueName">
+
+            </div>
+
+            <!--Description-->
+            <div class="form-group mb-3">
+
+                <label>Description</label>
+
+                <input class="form-control" placeholder="Enter Description of DrillType"
+                       @bind-value="drilltypedto.Description"></input>
+            </div>
+
+            <div class="py-3 my-3 text-center">
+                <Button Class="btn divbackground" Type="ButtonType.Submit">Add DrillType </Button>
+            </div>
+
+            <hr />
+        </EditForm>
+
+
+
+        @if (Message != null)
+        {
+            <div class="alert alert-danger" role="alert">
+                @Message
+            </div>
+        }
+
+        @if (isCopying)
+        {
+            <div class="text-center mt-4">
+                <h2>Please Wait...</h2>
+            </div>
+        }
+
+    </div>
+
+
+
+</div>
+
+
+
+
+@code {
+
+
+    [Inject] IClient Client { get; set; }
+    [Inject] NavigationManager navmanger { get; set; }
+
+    AddDrillTypeDTO drilltypedto = new AddDrillTypeDTO();
+    string? Message;
+    private bool isCopying = false;
+
+    public async Task adddrilltypedto()
+    {
+
+            isCopying = true;
+            StateHasChanged();
+
+        try
+        {
+            var Result = await Client.AddDrillTypeAsync(drilltypedto);
+
+            if (Result == false)
+                Message = "Error";
+
+            if (Result == true)
+                Message = "Drill Type Added";
+        }
+        catch
+        {
+            Message = "Error";
+
+        }
+        finally
+        {
+            isCopying = false;
+            StateHasChanged();
+        }
+
+
+
+
+
+
+    }
+
+}

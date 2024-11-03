@@ -1,0 +1,344 @@
+﻿@page "/AdminSide/AddCourse"
+@using Application.Extensions.Generators.NameGenerator
+@using DanCode_Blazor.Components.Layout
+@using DanCode_Blazor.Components.Pages.Utilites
+@using DanCode_Blazor.Providers
+@using DanCode_Blazor.Services.Base.interfaces
+@using System.Security.Claims
+@using global::Services.Base.interfaces
+@rendermode InteractiveServer
+@layout AdminPanelLayout;
+
+<PageTitle>Add Course</PageTitle>
+
+<style>
+    .divbackground {
+        background-color: #0b6131 !important;
+        color: white;
+    }
+
+    .formbackground {
+        background-color: #F7F9F2 !important;
+    }
+
+    .form-label {
+        background-color: #0b6131;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 3px;
+        display: inline-block;
+        width: 100%;
+        text-align: left;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .form-control, .form-control-file {
+        border: 1px solid #0b6131;
+        border-radius: 5px;
+        box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+
+        .form-control:focus, .form-control-file:focus {
+            border-color: #0b6131;
+            box-shadow: 0 0 8px rgba(11, 97, 49, 0.8);
+        }
+
+    .btn-custom {
+        background-color: #0b6131 !important;
+        color: white !important;
+    }
+
+        .btn-custom:hover {
+            background-color: #094d23 !important;
+        }
+</style>
+
+
+<div class="container mt-4">
+    <div>
+        <h2 class="text-center m-2 p-3 divbackground rounded">Add Course</h2>
+        <hr />
+    </div>
+
+    <div class="card p-4 mb-4 formbackground">
+
+        <EditForm Model="@AddCourseDto" OnValidSubmit="@SendData">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <!-- Author -->
+            <div class="form-group mb-3">
+                <label class="form-label">Author</label>
+                <InputText class="form-control"
+                           placeholder="Enter Author of This Course ex: Danial Khedri"
+                           @bind-Value="AddCourseDto.Author" />
+                <ValidationMessage For="(() => AddCourseDto.Author)" />
+            </div>
+            <hr />
+
+            <!-- Title -->
+            <div class="form-group mb-3">
+                <label class="form-label">Title</label>
+                <InputText class="form-control"
+                           placeholder="Enter Title of Course ex: 1v1 Competition"
+                           @bind-Value="AddCourseDto.Title" />
+                <ValidationMessage For="(() => AddCourseDto.Title)" />
+            </div>
+            <hr />
+
+            <!-- Description -->
+            <div class="form-group mb-3">
+                <label class="form-label">Description</label>
+                <InputTextArea class="form-control"
+                               placeholder="Enter Description of Course"
+                               @bind-Value="AddCourseDto.Description" />
+                <ValidationMessage For="(() => AddCourseDto.Description)" />
+            </div>
+            <hr />
+
+            <!-- Time -->
+            <div class="form-group mb-3">
+                <label class="form-label">Time</label>
+                <InputText class="form-control"
+                           placeholder="Enter Time Of Course"
+                           @bind-Value="AddCourseDto.Time" />
+                <ValidationMessage For="(() => AddCourseDto.Time)" />
+            </div>
+            <hr />
+
+            <!-- Price -->
+            <div class="form-group mb-3">
+                <label class="form-label">Price</label>
+                <InputNumber class="form-control"
+                             placeholder="Enter Price of Course"
+                             @bind-Value="AddCourseDto.Price" />
+                <ValidationMessage For="(() => AddCourseDto.Price)" />
+            </div>
+            <hr />
+
+            <!-- Image -->
+            <div class="form-group mb-3">
+                <label class="form-label">Select Image</label>
+                <InputFile OnChange="HandleSelectedFiles" class="form-control-file" />
+                @if (!string.IsNullOrEmpty(imageDataUrl))
+                {
+                    <img class="img-fluid p-3" src="@imageDataUrl" alt="Selected Image" />
+                }
+            </div>
+            <hr />
+
+            <!-- For -->
+            <div class="form-group mb-3">
+                <label class="form-label">For:</label>
+                <InputTextArea class="form-control"
+                               placeholder="Enter Target Audience of Course"
+                               @bind-Value="AddCourseDto.For" />
+                <ValidationMessage For="(() => AddCourseDto.For)" />
+            </div>
+            <hr />
+
+            <!-- Why Us -->
+            <div class="form-group mb-3">
+                <label class="form-label">Why Us:</label>
+                <InputTextArea class="form-control"
+                               placeholder="Explain Why Us"
+                               @bind-Value="AddCourseDto.WhyUs" />
+                <ValidationMessage For="(() => AddCourseDto.WhyUs)" />
+            </div>
+            <hr />
+
+            <!-- Videos -->
+            <div class="form-group mb-3">
+                <label class="form-label">Select Videos</label>
+                <InputFile OnChange="HandleFileSelected" multiple class="form-control-file" />
+
+                @if (videos.Any())
+                {
+                    <h4 class="mt-3">Selected Videos:</h4>
+                    <ul class="list-group">
+                        @foreach (var video in videos)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>@video.FileName</span>
+                                <input type="number" class="form-control w-25 mx-2" @bind="video.Order" min="1" max="@videos.Count" />
+                                <input type="text" class="form-control w-25 mx-2" @bind="video.Title" />
+                                <button type="button" class="btn btn-danger btn-sm" @onclick="() => RemoveVideo(video)">Remove</button>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+            <hr />
+
+            <!-- Submit Button -->
+            <div class="text-center">
+                <button class="btn btn-custom" type="submit">Add Course</button>
+            </div>
+        </EditForm>
+
+ 
+        @if (IsWait)
+        {
+            <div class="text-center mt-4">
+                <DanCode_Blazor.Components.Pages.Utilites.LoadingSpinner></DanCode_Blazor.Components.Pages.Utilites.LoadingSpinner>
+                <h2>Please Wait...</h2>
+            </div>
+        }
+
+    </div>
+</div>
+
+
+
+<CourseAddedModal @ref="myModal" Title="@Message" ShowCloseButton="true" ShowSaveButton="false">
+
+</CourseAddedModal>
+
+
+
+@code {
+
+    #region Injects
+    [Inject] ICourseService CourseService { get; set; }
+    [Inject] NavigationManager NavManager { get; set; }
+    [Inject] IUserService UserService { get; set; }
+    [Inject] ApiAuthenticationStateProvider apiAuthenticationStateProvider { get; set; }
+    #endregion
+
+    #region Variables
+
+    private bool IsWait = false;
+    private string Message = "";
+
+    private string imageDataUrl;
+    private IBrowserFile ImageFormFile { get; set; }
+    private AddCourseDTO AddCourseDto = new();
+    private List<VideoModel> videos = new();
+    private List<AddVideoDTO> videoDTOs = new();
+
+    #endregion
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var files = e.GetMultipleFiles();
+        foreach (var file in files)
+        {
+            videos.Add(new VideoModel
+                {
+                    FileName = file.Name,
+                    File = file,
+                    Order = videos.Count + 1 // Default order
+                });
+        }
+    }
+
+    private async Task HandleSelectedFiles(InputFileChangeEventArgs e)
+    {
+        ImageFormFile = e.File;
+        if (ImageFormFile != null)
+        {
+            using var memoryStream = new MemoryStream();
+            await ImageFormFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).CopyToAsync(memoryStream);
+            imageDataUrl = $"data:{ImageFormFile.ContentType};base64,{Convert.ToBase64String(memoryStream.ToArray())}";
+        }
+    }
+
+    private async Task SendData()
+    {
+
+        IsWait = true;
+
+        try
+        {
+            // Add Image
+            if (ImageFormFile != null)
+            {
+                AddCourseDto.ImageUrl = NameGenerator.GenerateUniqCode() + Path.GetExtension(ImageFormFile.Name);
+                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Images/Courses", AddCourseDto.ImageUrl);
+                await SaveFileAsync(ImageFormFile, imagePath);
+            }
+
+            // Add Videos
+            foreach (var video in videos.OrderBy(v => v.Order))
+            {
+                var uniqueFileName = $"{video.FileName}_{NameGenerator.GenerateUniqCode()}{Path.GetExtension(video.FileName)}";
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Videos/Courses", uniqueFileName);
+                await SaveFileAsync(video.File, filePath);
+
+                videoDTOs.Add(new AddVideoDTO
+                    {
+                        VideoUrl = uniqueFileName,
+                        Order = video.Order,
+                        Title = video.Title
+                    });
+            }
+
+            AddCourseDto.Videos = videoDTOs;
+
+            var response = await CourseService.AddCourse(AddCourseDto);
+            Message = response.Data ? "Course Added Successfully" : "Error Adding Course,Maybe an Course with this Title is Exist";
+
+            ShowModal();
+        }
+        catch
+        {
+
+
+        }
+        finally
+        {
+
+            StateHasChanged();
+            IsWait = false;
+
+        }
+
+
+
+    }
+
+    private async Task SaveFileAsync(IBrowserFile file, string filePath)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+        using var stream = file.OpenReadStream(900 * 1024 * 1024); // Limit to 900 MB
+        using var fileStream = new FileStream(filePath, FileMode.Create);
+        await stream.CopyToAsync(fileStream);
+    }
+
+    private void RemoveVideo(VideoModel video)
+    {
+        videos.Remove(video);
+    }
+
+    public class VideoModel
+    {
+        public string FileName { get; set; }
+        public IBrowserFile File { get; set; }
+        public int Order { get; set; }
+        public string Title { get; set; }
+    }
+
+
+    #region Modal
+
+    //Modal
+    private CourseAddedModal myModal;
+
+    private void ShowModal()
+    {
+        myModal.Open();
+    }
+
+    private void OnModalClose()
+    {
+
+        NavManager.NavigateTo("AdminSide/GetAllCourses");
+    }
+
+
+    #endregion
+
+}

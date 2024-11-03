@@ -1,0 +1,224 @@
+﻿@page "/LogInWithSMS"
+@using DanCode_Blazor.Services.Authentication
+@rendermode InteractiveServer
+
+
+<PageTitle> ورود | آکادمی فوتبال ایران </PageTitle>
+<title> ورود | آکادمی فوتبال ایران </title>
+
+
+<div class="d-flex justify-content-center my-2 min-vh-100">
+
+    <div class="card shadow-lg p-2" style="max-width: 400px; width: 100%;">
+
+        <div class="card-body">
+            @if (errorMessage != null)
+            {
+                <div class="alert alert-danger" role="alert">
+                    @errorMessage
+                </div>
+            }
+
+            <div>
+                <h3 class="text-center mb-1">ورود با پیامک</h3>
+                <hr />
+            </div>
+
+            <EditForm Model="userLogInDTO" OnValidSubmit="SendSMS">
+
+                <DataAnnotationsValidator></DataAnnotationsValidator>
+
+                <div class="form-group mb-3">
+                    <label for="شماره موبایل" class="form-label">شماره موبایل</label>
+                    <InputText id="شماره موبایل" class="form-control" @bind-Value="userLogInDTO.PhoneNumber" placeholder="لطفا شماره خود را وارد کنید"></InputText>
+                </div>
+
+                @if (countdown > 1)
+                {
+                    <hr />
+                    <div class="form-group mb-3">
+                        <label for="شماره موبایل" class="form-label">ورود کد تایید</label>
+                        <InputText class="form-control" @bind-Value="VerifyCode" placeholder="لطفا کد تایید را وارد کنید "></InputText>
+                    </div>
+
+                    <Button Type="ButtonType.Button" @onclick="LogInWithSms" class="btn btn-custom w-100">
+                        ورود
+                    </Button>
+                    <hr />
+                }
+
+
+                <div class="text-center my-3">
+                    <button type="submit" class="btn btn-custom w-100" @onclick="SendSMS" disabled="@isButtonDisabled">
+                        @buttonText
+                    </button>
+                </div>
+
+            </EditForm>
+
+            <div class="text-center mt-3">
+                <a href="/Register" class="text-muted">حساب کاربری ندارید؟</a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<style>
+    .btn-custom {
+        background-color: #0b6131 !important;
+        color: white !important;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-custom:hover {
+            background-color: #094d23 !important;
+            color: white !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+
+    .form-control {
+        border-radius: 5px;
+    }
+</style>
+
+@code {
+
+    [Inject] IClient httpclient { get; set; }
+    [Inject] NavigationManager NavManger { get; set; }
+    [Inject] IAuthenticationService AuthService { get; set; }
+
+    private UserLogInDTO userLogInDTO = new UserLogInDTO();
+    private System.Threading.Timer? timer; // تعریف تایمر به صورت متغیر کلاسی
+    private string errorMessage;
+    private bool isButtonDisabled = false;
+    private string buttonText = "ارسال کد تایید";
+    private int countdown = 0;
+    private string VerifyCode;
+
+    private string Code = "";
+
+
+
+    private async Task SendSMS()
+    {
+
+        errorMessage = null;
+        if (string.IsNullOrEmpty(userLogInDTO.PhoneNumber))
+        {
+
+            errorMessage = "لطفا شماره موبایل را وارد کنید";
+            return;
+
+        }
+
+
+        var Isexist = await httpclient.PhoneNumberIsExistAsync(userLogInDTO.PhoneNumber);
+
+        if (!Isexist)
+        {
+            errorMessage = ".شماره موبایل وارد شده در سیستم ثبت نشده است. لطفاً ابتدا ثبت ‌نام کنید";
+            return;
+        }
+
+
+        //Send Sms
+        var response = await httpclient.SendOtpAsync(userLogInDTO.PhoneNumber, false);
+
+        if (response.IsSuccess == false)
+        {
+
+            errorMessage = response.ErrorMessage;
+
+        }
+        else
+        {
+
+
+            isButtonDisabled = true;
+            StartCountdown();
+
+        }
+
+
+
+
+    }
+
+
+    private async Task StartCountdown()
+    {
+        countdown = 120;
+        isButtonDisabled = true; // دکمه غیرفعال شود
+        buttonText = $"ارسال مجدد کد تایید در {countdown} ثانیه";
+
+        // ایجاد تایمر
+        timer = new System.Threading.Timer(async _ =>
+        {
+            countdown--;
+            if (countdown == 0)
+            {
+                isButtonDisabled = false; // دکمه دوباره فعال شود
+                buttonText = "ارسال کد تایید";
+
+                await InvokeAsync(() => StateHasChanged()); // به‌روزرسانی UI
+
+                Code = "";
+                // تایمر را متوقف کنید و آن را آزاد کنید
+                timer?.Dispose();
+            }
+            else
+            {
+                buttonText = $"ارسال مجدد کد تایید در {countdown} ثانیه";
+                await InvokeAsync(() => StateHasChanged()); // به‌روزرسانی UI
+            }
+        }, null, 1000, 1000); // تایمر هر ثانیه شمارنده را کاهش می‌دهد
+    }
+
+
+    private async Task LogInWithSms()
+    {
+
+
+        try
+        {
+
+            VerifyOtpModel verifyOtp = new VerifyOtpModel()
+                {
+                    PhoneNumber = userLogInDTO.PhoneNumber,
+                    OtpCode = VerifyCode,
+                };
+
+            var response = await AuthService.AuthenticateWithSmsAsync(verifyOtp);
+
+
+            if (response)
+            {
+
+                NavManger.NavigateTo("/");
+            }
+            else
+            {
+
+                errorMessage = "مشکلی رخ داده است لطفا دوباره امتحان کنید";
+
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+
+        }
+
+
+
+    }
+
+}
+

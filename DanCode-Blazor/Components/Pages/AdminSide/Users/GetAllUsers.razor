@@ -1,0 +1,293 @@
+﻿@page "/AdminSide/GetAllUsers";
+@using DanCode_Blazor.Components.Layout
+@using DanCode_Blazor.Components.Pages.Utilites
+@using DanCode_Blazor.Services.Base.interfaces
+@using global::Services.Base
+@using global::Services.Base.interfaces
+@inject IUserService UserService;
+@rendermode InteractiveServer
+
+@layout AdminPanelLayout;
+
+<style>
+    .divbackground {
+        background-color: #0b6131 !important;
+        color: white;
+    }
+
+    .formbackground {
+        background-color: #F7F9F2 !important;
+    }
+
+    .but {
+        background-color: #0b6131 !important;
+    }
+
+    .table thead th {
+        background-color: #0b6131;
+        color: white;
+        text-align: center;
+    }
+
+    .table tbody td, .table tbody th {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f2f2f2;
+    }
+
+    .btn-custom {
+        margin: 0 2px;
+    }
+
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary {
+        background-color: #0b6131 !important;
+        border: none;
+    }
+
+    .btn-danger {
+        background-color: #ff4d4d !important;
+        border: none;
+    }
+
+        .btn-primary:hover, .btn-danger:hover {
+            opacity: 0.9;
+        }
+
+    .modal {
+        display: block;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s linear;
+    }
+
+        .modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: transparent !important;
+    }
+</style>
+
+<div class="container mt-4">
+
+    <div>
+        <h2 class="text-center m-2  p-3 divbackground rounded"> Users </h2>
+        <hr />
+    </div>
+
+    @if (users == null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
+        <div class="card p-4 mb-4">
+            <div class="table-responsive border p-2 m-2 rounded">
+                <table class="table table-striped table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">FullName</th>
+                            <th scope="col">PhoneNumber</th>
+                            <th scope="col">Is Admin</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in users)
+                        {
+                            <tr>
+                                <th>@item.Id</th>
+                                <td>@item.FullName</td>
+                                <td>@item.PhoneNumber</td>
+                               
+                                <td>
+                                <td>
+                                    <InputCheckbox @bind-Value="item.IsAdmin"/>
+                                    <Button Class="btn btn-primary btn-sm" @onclick="() => UpdateUserAdminStatus(item.Id, item.IsAdmin)">
+                                        Update
+                                    </Button>
+                                </td>
+                                </td>
+
+                                
+                                <td>
+
+                                    <Button Class="btn btn-primary btn-sm btn-custom" @onclick="() => ShowBuyedCourses(item.Id)">
+                                        <i class="bi bi-book"></i> Courses
+                                    </Button>
+
+                                    <Button Class="btn btn-danger btn-sm btn-custom" @onclick="() => ShowBuyedProducts(item.Id)">
+                                        <i class="bi bi-box-seam"></i> Products
+                                    </Button>
+
+                                </td>
+
+
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modal for Courses -->
+@if (isCoursesModalVisible)
+{
+    <div class="modal show">
+        <div class="modal-backdrop" @onclick="CloseModal"></div>
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Buyed Courses</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Course ID</th>
+                                <th>Course Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (buyedCourses != null)
+                            {
+                                @foreach (var course in buyedCourses)
+                                {
+                                    <tr>
+                                        <td>@course.Id</td>
+                                        <td>@course.Title</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="2">No courses found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal for Products -->
+@if (isProductsModalVisible)
+{
+    <div class="modal show">
+        <div class="modal-backdrop" @onclick="CloseModal"></div>
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Buyed Products</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Product ID</th>
+                                <th>Product Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (buyedProducts != null)
+                            {
+                                @foreach (var product in buyedProducts)
+                                {
+                                    <tr>
+                                        <td>@product.Id</td>
+                                        <td>@product.Name</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="2">No products found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+
+    [Inject] IUserService _UserService { get; set; }
+    [Inject] ICourseService _CourseService { get; set; }
+    [Inject] IProductService _ProductService { get; set; }
+
+
+
+    List<UserReadonlyDTO> users = new List<UserReadonlyDTO>();
+    List<CourseReadonlyDTO> buyedCourses = new List<CourseReadonlyDTO>();
+    List<ProductReadOnlyDTO> buyedProducts = new List<ProductReadOnlyDTO>();
+
+    bool isCoursesModalVisible = false;
+    bool isProductsModalVisible = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var response = await _UserService.GetAllUsers();
+        users = response.Data;
+    }
+
+    private async Task UpdateUserAdminStatus(int userId, bool isAdmin)
+    {
+        // Call your service to update admin status in the backend
+        await _UserService.UpdateUserAdminStatus(userId, isAdmin);
+
+        StateHasChanged();
+    }
+
+    //Modal
+    private async Task ShowBuyedCourses(int UserId)
+    {
+        // Call service to get courses for the user
+        var response = await _CourseService.GetBuyedCoursesByUserId(UserId);
+        buyedCourses = response.Data;
+        isCoursesModalVisible = true;
+    }
+
+    private async Task ShowBuyedProducts(int UserId)
+    {
+        // Call service to get products for the user
+        var response = await _ProductService.GetBuyedProductsByUserId(UserId);
+        buyedProducts = response.Data;
+        isProductsModalVisible = true;
+    }
+
+    private void CloseModal()
+    {
+        isCoursesModalVisible = false;
+        isProductsModalVisible = false;
+    }
+
+}

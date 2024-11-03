@@ -1,0 +1,100 @@
+﻿@page "/Courses"
+@using DanCode_Blazor.Components.Pages.Utilites
+@rendermode InteractiveServer
+
+
+<PageTitle>  دوره ها | آکادمی فوتبال ایران</PageTitle>
+<title> دوره ها | آکادمی فوتبال ایران</title>
+
+<style>
+    .divbackground {
+        background-color: #0b6131 !important;
+        color: white;
+        padding: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .course-card {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        background: white;
+        margin-bottom: 20px;
+        transition: transform 0.3s ease;
+        padding: 20px;
+        display: flex;
+        flex-direction: row-reverse; /* جهت عکس و متن */
+        cursor: pointer;
+    }
+
+        .course-card:hover {
+            transform: scale(1.02);
+        }
+
+</style>
+
+<div class="divbackground mt-3">
+    <h2>دوره های علمی آکادمی</h2>
+</div>
+
+<hr />
+
+@if (Courses == null)
+{
+    <div class="text-center justify-content-center" role="status">
+        <LoadingSpinner></LoadingSpinner>
+    </div>
+}
+
+else
+{
+    <div class="container">
+        <!-- استفاده از container-fluid برای ریسپانسیو بهتر -->
+
+        <div class="row no-gutters">
+            <!-- استفاده از no-gutters برای حذف فاصله‌های اضافی -->
+            @foreach (var item in Courses)
+            {
+                <div class="col-12 course-card card mb-3" @onclick="(()=> GotoCourseById(item.Id))">
+
+                    <div class="row no-gutters">
+                        <!-- حذف فاصله‌های اضافی بین ستون‌ها -->
+
+                        <div class="col-md-4">
+                            <img src="/Images/Courses/@item.ImageUrl" class="img-fluid rounded-start" alt="Image">
+                        </div>
+
+                        <div class="col-md-8">
+                            <div class="card-body">
+                                <h5 class="card-title">@item.Title</h5>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            }
+        </div>
+
+    </div>
+    <hr />
+}
+
+@code {
+    [Inject] IClient Client { get; set; }
+    [Inject] NavigationManager Navmanger { get; set; }
+
+    ICollection<CourseReadonlyDTO> Courses;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Courses = await Client.GetAllCoursesAsync();
+    }
+
+    private async Task GotoCourseById(int CourseId)
+    {
+        Navmanger.NavigateTo($"/Courses/{CourseId}");
+    }
+}

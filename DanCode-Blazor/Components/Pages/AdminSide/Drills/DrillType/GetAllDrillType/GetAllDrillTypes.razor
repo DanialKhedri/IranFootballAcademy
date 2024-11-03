@@ -1,0 +1,219 @@
+﻿@page "/AdminSide/GetAllDrillTypes"
+@using DanCode_Blazor.Components.Layout
+@using DanCode_Blazor.Components.Pages.Utilites
+@using DanCode_Blazor.Services.Base.interfaces
+@rendermode InteractiveServer
+@layout AdminPanelLayout;
+
+
+<style>
+    .divbackground {
+        background-color: #0b6131 !important;
+        color: white;
+    }
+
+    .formbackground {
+        background-color: #F7F9F2 !important;
+    }
+
+    .but {
+        background-color: #0b6131 !important;
+    }
+
+    .table thead th {
+        background-color: #0b6131;
+        color: white;
+        text-align: center;
+    }
+
+    .table tbody td, .table tbody th {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f2f2f2;
+    }
+
+    .btn-custom {
+        margin: 0 2px;
+    }
+
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary {
+        background-color: #0b6131 !important;
+        border: none;
+    }
+
+    .btn-danger {
+        background-color: #ff4d4d !important;
+        border: none;
+    }
+
+        .btn-primary:hover, .btn-danger:hover {
+            opacity: 0.9;
+        }
+</style>
+
+<div class="container mt-4">
+
+    <div>
+
+        <h2 class="text-center m-2  p-3 divbackground rounded">Drill Types</h2>
+        <hr />
+
+        <div class="my-3">
+            <Button @onclick="GoToAddDrillType" Class="btn btn-primary">Add New</Button>
+        </div>
+
+    </div>
+
+    @if (drillTypeReadonlyDTOs == null)
+    {
+        <LoadingSpinner />
+    }
+
+    else
+    {
+
+        <div class="card p-4 mb-4">
+
+            <div class="table-responsive border p-2 m-2 rounded">
+
+                <table class="table table-striped table-bordered table-hover">
+
+                    <thead>
+
+                        <tr>
+
+                            <th scope="col">Id</th>
+                            <th scope="col">UniqueName</th>
+                            <th scope="col">Description</th>
+                            <th>Actions</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in drillTypeReadonlyDTOs)
+                        {
+                            <tr>
+
+                                <td>@item.Id</td>
+                                <td>@item.UniqueName</td>
+                                <td>@item.Description</td>
+                                <td>
+                                 
+                                    <Button Class="btn btn-danger btn-sm btn-custom" @onclick="(()=>ShowModal())">
+                                        <i class="bi bi-trash"></i> Remove
+                                    </Button>
+
+                                    <TestModal @ref="myModal" Title="Remove Drill" ShowCloseButton="true" ShowSaveButton="true" OnClose="OnModalClose" OnSave="(()=>OnModalSave(item.Id))">
+                                        <p>Are You Sure To delete Drill @item.UniqueName</p>
+                                    </TestModal>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                
+
+                </table>
+
+
+
+
+
+
+            </div>
+        </div>
+
+    }
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+@code {
+
+    [Inject] IDrillService drillService { get; set; }
+    [Inject] NavigationManager navmanger { get; set; }
+
+    public List<DrillTypeReadOnlyDTO> drillTypeReadonlyDTOs { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await drillService.GetAllDrillTypes();
+        drillTypeReadonlyDTOs = response.Data;
+
+    }
+
+
+    private async Task RemoveDrillType(int DrillTypeId)
+    {
+        var Response = await drillService.RemoveDrillType(DrillTypeId);
+
+    }
+
+
+    private async Task GoToAddDrillType()
+    {
+        navmanger.NavigateTo("/AdminSide/AddDrillType");
+    }
+
+    private async Task GoToDrillTypes()
+    {
+        navmanger.NavigateTo($"/AdminSide/GetAllDrillTypes");
+    }
+
+    private async Task GoToDrillAges()
+    {
+        navmanger.NavigateTo($"/AdminSide/GetAllDrillAges");
+    }
+
+
+    private async Task GoToEditDrill(int DrillId)
+    {
+
+        navmanger.NavigateTo($"/navigatetopage/{DrillId}");
+
+    }
+
+
+
+    //Modal
+
+    private TestModal myModal;
+
+    private void ShowModal()
+    {
+        myModal.Open();
+    }
+
+    private void OnModalClose()
+    {
+        // Handle modal close event here
+        Console.WriteLine("Modal closed!");
+    }
+
+    private async void OnModalSave(int DrillId)
+    {
+        await RemoveDrillType(DrillId);
+    }
+}

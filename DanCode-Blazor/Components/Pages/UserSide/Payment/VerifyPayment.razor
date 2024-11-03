@@ -1,0 +1,137 @@
+﻿@page "/verify/{orderId}"
+@using DanCode_Blazor.Services.Base.interfaces
+@using Microsoft.AspNetCore.WebUtilities
+
+<PageTitle>  آکادمی فوتبال ایران</PageTitle>
+<title> آکادمی فوتبال ایران</title>
+@if (IsLoading)
+{
+    <div class="text-center my-5">
+        <DanCode_Blazor.Components.Pages.Utilites.LoadingSpinner></DanCode_Blazor.Components.Pages.Utilites.LoadingSpinner>
+    </div>
+}
+
+else
+{
+
+
+    <div class="container mt-5">
+
+        <div class="card">
+
+            <div class="card-header text-center">
+                <h2>نتیجه پرداخت</h2>
+            </div>
+
+            <div class="card-body">
+
+                <p>@Message</p>
+
+                @if (verificationResult != null && verificationResult.Success == 1)
+                {
+
+                    <div class="alert alert-success" role="alert">
+                        ضمن تشکر از خرید شما پرداخت شما با موفقیت انجام شد. کد پیگیری : <strong>@verificationResult.Ref_id</strong>
+                    </div>
+
+                }
+                else
+                {
+
+                    <div class="alert alert-danger" role="alert">
+                        متأسفانه پرداخت شما ناموفق بود. لطفاً دوباره تلاش کنید.
+                    </div>
+
+                }
+
+                <a href="/" class="btn btn-primary">بازگشت به صفحه اصلی</a>
+            </div>
+
+        </div>
+    </div>
+}
+
+
+@code {
+
+    [Inject] IPaymentService PaymentService { get; set; }
+    [Inject] IOrderService OrderService { get; set; }
+    [Inject] NavigationManager Navmanger { get; set; }
+
+
+    [Parameter]
+    public string orderId { get; set; }
+
+    // متغیرها برای ذخیره مقدار پارامترهای کوئری
+    public string Authority { get; set; }
+    public string Status { get; set; }
+    private string Message { get; set; }
+
+
+    private PaymentVerificationResponse verificationResult;
+
+    private bool IsLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        IsLoading = true;
+
+        try
+        {
+            // گرفتن URL فعلی
+            var uri = Navmanger.ToAbsoluteUri(Navmanger.Uri);
+
+            // استخراج پارامترهای کوئری
+            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("Authority", out var authority))
+            {
+                Authority = authority; // مقدار Authority را از کوئری استخراج کنید
+            }
+
+            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("Status", out var status))
+            {
+                Status = status; // مقدار Status را از کوئری استخراج کنید
+            }
+
+
+            var getorderresponse = await OrderService.GetOrderByOrderId(int.Parse(orderId));
+            var Order = getorderresponse.Data;
+
+            // ایجاد مدل تاییدیه پرداخت
+            var model = new PaymentVerificationInputModel
+                {
+                    Authority = authority, // کد authority از URL
+                    Amount = Order.Sum, // مقدار پرداخت (همان مقداری که در درخواست پرداخت وارد کردید)
+                    OrderId = int.Parse(orderId),
+
+                };
+
+            // تاییدیه پرداخت را از API دریافت کنید
+            verificationResult = await PaymentService.PaymentVerificationAsync(model);
+
+            if (verificationResult.Success != 1)
+            {
+
+                Message = verificationResult.Message;
+            }
+
+        }
+        catch
+        {
+
+
+        }
+        finally
+        {
+
+            IsLoading = false;
+
+        }
+
+
+
+    }
+
+
+}

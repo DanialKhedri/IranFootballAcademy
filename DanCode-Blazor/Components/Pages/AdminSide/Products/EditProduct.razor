@@ -1,0 +1,367 @@
+﻿@page "/AdminSide/EditProduct/{ProductId:int}"
+@rendermode InteractiveServer
+
+@using Application.Extensions.Generators.NameGenerator
+@using DanCode_Blazor.Components.Layout
+@using DanCode_Blazor.Components.Pages.Utilites
+@using DanCode_Blazor.Services.Base.interfaces
+@layout AdminPanelLayout;
+
+<PageTitle>Edit Product</PageTitle>
+
+<style>
+    .divbackground {
+        background-color: #0b6131 !important;
+        color: white;
+    }
+
+    .formbackground {
+        background-color: #F7F9F2 !important;
+    }
+
+    .form-label {
+        background-color: #0b6131;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 3px;
+        display: inline-block;
+        width: 100%; /* عرض لیبل‌ها را 100% عرض والد قرار می‌دهد */
+        text-align: left; /* متن لیبل را به چپ تراز می‌کند */
+        font-weight: bold; /* متن لیبل‌ها را پررنگ‌تر می‌کند */
+        margin-bottom: 10px; /* فاصله کمی از عناصر زیرین ایجاد می‌کند */
+    }
+
+
+    .form-control, .form-control-file {
+        border: 1px solid #0b6131;
+        border-radius: 5px;
+        box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+        font-size: 16px;
+    }
+
+        .form-control:focus, .form-control-file:focus {
+            border-color: #0b6131;
+            box-shadow: 0 0 8px rgba(11, 97, 49, 0.8);
+        }
+
+    .btn-success {
+        background-color: #0b6131;
+        border-color: #0b6131;
+    }
+
+    .btn-danger {
+        background-color: #b33a3a;
+        border-color: #b33a3a;
+    }
+
+        .btn-danger:hover {
+            background-color: #a33030;
+        }
+
+    .card {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    hr {
+        border: 1px solid #0b6131;
+    }
+
+    img {
+        border: 2px solid #0b6131;
+        border-radius: 10px;
+    }
+
+    video {
+        border-radius: 10px;
+    }
+
+    h2, h3, h4 {
+        color: #0b6131;
+    }
+
+    .alert-danger {
+        background-color: #ffcccc;
+        color: #b33a3a;
+        border-radius: 5px;
+        padding: 10px;
+    }
+
+    .list-group-item {
+        border-radius: 5px;
+        box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<div class="container mt-4">
+
+    <div>
+        <h2 class="text-center m-2 p-3 divbackground rounded">Edit Product</h2>
+        <hr />
+    </div>
+
+    @if (ProductReadonlyDTO == null)
+    {
+        <LoadingSpinner />
+    }
+
+    else
+    {
+        <div class="card p-4 mb-4">
+
+            <EditForm Model="ProductReadonlyDTO" OnValidSubmit="SendData">
+
+                <DataAnnotationsValidator />
+              
+
+                <!-- Name -->
+                <div class="form-group mb-3">
+
+                    <label class="form-label">Name</label>
+
+                    <InputText class="form-control" @bind-Value="ProductReadonlyDTO.Name" />
+                    <ValidationMessage For="(() => ProductReadonlyDTO.Name)" />
+                </div>
+
+
+                <!-- Description -->
+                <div class="form-group mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <InputTextArea id="description" class="form-control" placeholder="Enter Description " @bind-Value="ProductReadonlyDTO.Description" />
+                    <ValidationMessage For="(() => ProductReadonlyDTO.Description)" />
+                </div>
+
+                <!-- Price -->
+                <div class="form-group mb-3">
+                    <label for="price" class="form-label">Price</label>
+                    <InputNumber id="price" class="form-control" placeholder="Enter Price of Course" @bind-Value="ProductReadonlyDTO.Price" />
+                    <ValidationMessage For="(() => ProductReadonlyDTO.Price)" />
+                </div>
+                <hr />
+
+                <!-- Before Image -->
+                <div class="form-group mb-3">
+                    <div>
+                        <label for="image" class="form-label">Image</label>
+                    </div>
+                    @if (ProductReadonlyDTO.ImageUrl != null)
+                    {
+                        <img class="img-fluid rounded" style="max-width: 100%; height: auto;" src="/Images/Products/@ProductReadonlyDTO.ImageUrl" alt="Selected Image" />
+                    }
+                </div>
+                <hr />
+
+                <!-- New Image -->
+                <div class="form-group mb-3">
+                    <div>
+                        <label for="image" class="form-label">Select New Image</label>
+                    </div>
+                    <InputFile id="image" OnChange="HandleSelectedImageFile" class="form-control-file" />
+                    @if (!string.IsNullOrEmpty(imageDataUrl))
+                    {
+                        <img class="img-fluid rounded mt-2" style="max-width:550px; max-height:400px;" src="@imageDataUrl" alt="Selected Image" />
+                    }
+                </div>
+                <hr />
+
+                <!-- File -->
+                <div class="form-group mb-3">
+
+                    <label class="form-label">Select File</label>
+                    <InputFile OnChange="HandleSelectedProductFile" class="form-control-file" />
+
+
+                </div>
+                <hr />
+
+                <!-- Submit Button -->
+                <div class="text-center">
+                    <button class="btn btn-success" type="submit">Update Product</button>
+                </div>
+
+            </EditForm>
+        </div>
+    }
+
+    @if (Message != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @Message
+        </div>
+    }
+
+    @if (isCopying)
+    {
+        <div class="text-center mt-4">
+            <LoadingSpinner></LoadingSpinner>
+            <h2>Please Wait...</h2>
+        </div>
+    }
+
+
+</div>
+
+@code {
+
+
+    [Inject] IClient client { get; set; }
+    [Inject] IProductService ProductService { get; set; }
+    [Inject] NavigationManager NavManager { get; set; }
+
+    [Parameter] public int ProductId { get; set; }
+
+    private bool isCopying = false;
+
+    private string Message;
+
+    private string imageDataUrl;
+    private string ProductFileDataUrl;
+
+    private IBrowserFile ImageFormFile { get; set; }
+    private IBrowserFile ProductFile { get; set; }
+
+    private ProductReadOnlyDTO ProductReadonlyDTO = new ProductReadOnlyDTO();
+
+
+    //Image
+    private async Task HandleSelectedImageFile(InputFileChangeEventArgs e)
+    {
+        ImageFormFile = e.File;
+
+        if (ImageFormFile != null)
+        {
+            using var memoryStream = new MemoryStream();
+            await ImageFormFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).CopyToAsync(memoryStream); // Maximum file size of 10 MB
+            imageDataUrl = $"data:{ImageFormFile.ContentType};base64,{Convert.ToBase64String(memoryStream.ToArray())}";
+        }
+
+    }
+
+    //File
+    private async Task HandleSelectedProductFile(InputFileChangeEventArgs e)
+    {
+        ProductFile = e.File;
+
+        if (ProductFile != null)
+        {
+            using var memoryStream = new MemoryStream();
+            await ImageFormFile.OpenReadStream(maxAllowedSize: 2000 * 1024 * 1024).CopyToAsync(memoryStream); // Maximum file size of 10 MB
+            ProductFileDataUrl = $"data:{ImageFormFile.ContentType};base64,{Convert.ToBase64String(memoryStream.ToArray())}";
+        }
+
+    }
+
+    //Load Data
+    protected override async Task OnParametersSetAsync()
+    {
+        ProductReadonlyDTO = await client.GetProductByIdAsync(ProductId);
+
+    }
+
+    //Send Data To Server
+    private async Task SendData()
+    {
+        isCopying = true;
+        StateHasChanged();
+
+        try
+        {
+            await UpdateImageAsync();
+            await UpdateFileAsync();
+
+            ProductDTO productDTO = new ProductDTO()
+                {
+
+                    Id = ProductReadonlyDTO.Id,
+                    Name = ProductReadonlyDTO.Name,
+                    Description = ProductReadonlyDTO.Description,
+                    Price = ProductReadonlyDTO.Price,
+                    ImageUrl = ProductReadonlyDTO.ImageUrl,
+                    FileUrl = ProductReadonlyDTO.FileUrl,
+
+                };
+
+
+            var response = await ProductService.EditProduct(productDTO);
+
+            if (response.Data == true)
+            {
+                Message = "Product Sucessfuly Updated ";
+            }
+            else
+            {
+                Message = "Error";
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Message = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            isCopying = false;
+            StateHasChanged();
+        }
+    }
+
+    public async Task UpdateImageAsync()
+    {
+        if (ImageFormFile != null)
+        {
+            // Delete old image if exists
+            if (!string.IsNullOrEmpty(ProductReadonlyDTO.ImageUrl))
+            {
+                var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Images/Courses", ProductReadonlyDTO.ImageUrl);
+                if (File.Exists(oldImagePath))
+                {
+                    File.Delete(oldImagePath);
+                }
+            }
+
+            // Save new image
+            ProductReadonlyDTO.ImageUrl = NameGenerator.GenerateUniqCode() + Path.GetExtension(ImageFormFile.Name);
+            string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Images/Products", ProductReadonlyDTO.ImageUrl);
+
+            await SaveFileAsync(ImageFormFile, imagePath);
+        }
+    }
+
+    public async Task UpdateFileAsync()
+    {
+        if (ProductFile != null)
+        {
+            // Delete old image if exists
+            if (!string.IsNullOrEmpty(ProductReadonlyDTO.ImageUrl))
+            {
+                var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Files/Products", ProductReadonlyDTO.FileUrl);
+                if (File.Exists(oldImagePath))
+                {
+                    File.Delete(oldImagePath);
+                }
+            }
+
+            // Save new image
+            ProductReadonlyDTO.FileUrl = NameGenerator.GenerateUniqCode() + Path.GetExtension(ProductFile.Name);
+            string FilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Files/Products", ProductReadonlyDTO.FileUrl);
+            await SaveFileAsync(ProductFile, FilePath);
+
+        }
+    }
+
+
+
+    private async Task SaveFileAsync(IBrowserFile file, string filePath)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+        using var stream = file.OpenReadStream(900 * 1024 * 1024); // Limit to 900 MB
+        using var fileStream = new FileStream(filePath, FileMode.Create);
+        await stream.CopyToAsync(fileStream);
+    }
+
+}

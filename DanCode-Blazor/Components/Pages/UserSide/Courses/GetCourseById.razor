@@ -1,0 +1,480 @@
+﻿@page "/Courses/{CourseId:int}"
+@using DanCode_Blazor.Components.Pages.Utilites
+@using DanCode_Blazor.Providers
+@using DanCode_Blazor.Services.Base.interfaces
+@using DanCode_Blazor.Services.CourseService
+@using global::Services.Base.interfaces
+
+
+@if (Course != null)
+{
+    
+}
+
+
+<style>
+
+
+    .btn-custom {
+        background-color: #0b6131 !important;
+        color: white !important;
+        border: 2px solid transparent;
+        padding: 10px 20px;
+        border-radius: 5px;
+        transition: all 0.3s ease; /* اضافه کردن ترانزیشن برای تغییرات نرم‌تر */
+    }
+
+
+        .btn-custom:hover {
+            background-color: #094d23 !important; /* تغییر رنگ پس‌زمینه */
+            color: #fff !important; /* حفظ رنگ متن */
+            border-color: #0b6131; /* اضافه کردن حاشیه */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* اضافه کردن سایه برای عمق */
+            transform: translateY(-3px); /* اضافه کردن افکت شناور به دکمه */
+        }
+
+    .larg-bold {
+        font-size: 21px;
+        font-weight: 400;
+    }
+
+
+    /* اضافه کردن فونت "Vazir" */
+    َ@@import url('https://fonts.googleapis.com/css2?family=Vazir:wght@400;500;700&display=swap');
+
+
+    body {
+        font-family: 'Vazir', sans-serif;
+        overflow-x: hidden; /* جلوگیری از اسکرول افقی */
+    }
+
+    .divbackground {
+        background-color: #0b6131 !important;
+        color: white;
+        padding: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .course-card {
+        border: 1px solid #ddd; /* Light border color for card */
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        background: white;
+        margin-bottom: 20px;
+        padding: 20px; /* Padding inside the card */
+        transition: transform 0.3s ease;
+        position: relative; /* Required for pseudo-element positioning */
+    }
+
+        .course-card img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+
+        .course-card .card-body {
+            padding: 20px;
+        }
+
+
+        .course-card:hover {
+            transform: scale(1.02);
+        }
+
+
+        .course-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 2px solid #0b6131; /* Darker green border */
+            border-radius: 10px;
+            pointer-events: none; /* Make sure the border doesn't interfere with interactions */
+        }
+
+
+    .card-title {
+        font-size: 1.75rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+
+    .card-text {
+        font-size: 1.5rem; /* Increased font size */
+        line-height: 1.6; /* Increased line height for better readability */
+        margin-bottom: 15px;
+    }
+
+    .text-muted {
+        font-size: 1.125rem;
+        color: #6c757d;
+    }
+
+    .highlight-box {
+        background-color: #d4edda;
+        border: 2px solid #c3e6cb;
+        border-radius: 5px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .highlight-title {
+        font-size: 1.75rem;
+        font-weight: bold;
+        color: #155724;
+        margin-bottom: 15px;
+    }
+
+    .highlight-box p {
+        font-size: 1.5rem; /* Increased font size */
+        line-height: 1.6; /* Increased line height for better readability */
+    }
+
+        .highlight-box p strong {
+            font-weight: bold;
+        }
+
+</style>
+
+
+
+@if (wait)
+{
+    <LoadingSpinner></LoadingSpinner>
+}
+else
+{
+    @if (Course == null)
+    {
+        <LoadingSpinner></LoadingSpinner>
+    }
+
+    else
+    {
+
+        <PageTitle>@Course.Title | آکادمی فوتبال ایران</PageTitle>
+        <title>@Course.Title | آکادمی فوتبال ایران</title>
+
+        <div class="divbackground mt-3">
+
+            <h1>@Course.Title</h1>
+
+        </div>
+
+        <div class="container-md">
+
+            <div class="course-card">
+
+                <img class="p-2" src="/Images/Courses/@Course.ImageUrl" />
+
+                <div class="card-body">
+
+                    <h3 class="card-title">@Course.Title</h3>
+                    <hr />
+
+                    <p class="larg-bold" style="white-space: pre-line;">
+                        @Course.Description
+                    </p>
+
+                    <hr />
+
+                    <div>
+                        <p class="card-text"><small class="text-muted">مدت زمان دوره:  <strong>@Course.Time </strong> </small></p>
+                    </div>
+
+                    <hr />
+
+                    <div>
+                        <p class="card-text"><small class="text-muted">قیمت دوره : <strong>@string.Format("{0:n0}", Course.Price)</strong> تومان </small></p>
+                    </div>
+
+                    <hr />
+
+
+
+
+                    <div class="highlight-box">
+                        <h5 class="highlight-title">این دوره مناسب چه کسانی ست؟</h5>
+                        <p style="white-space: pre-line;">
+
+                            @Course.For;
+                        </p>
+                    </div>
+
+                    <hr />
+
+                    <div class="highlight-box">
+                        <h5 class="highlight-title">چرا ما؟</h5>
+                        <p style="white-space: pre-line;">
+                            @Course.WhyUs;
+                        </p>
+                    </div>
+
+                    <hr />
+
+                    @if (!IsBuyed)
+                    {
+
+
+
+                        <div class="text-center my-2">
+
+                            <div class="my-2">
+
+                                <Button @onclick="AddCourseToCart" Class="btn-custom ">افزودن به سبد خرید</Button>
+
+                            </div>
+
+
+                        </div>
+
+
+
+                    }
+                    else if (IsBuyed)
+                    {
+
+                        <div class="container mt-4 border p-2">
+
+                            <h3 class="my-4 divbackground"> ویدیوهای دوره </h3>
+
+                            <div class="container mt-4">
+
+
+                                <div class="accordion" id="videoAccordion">
+
+                                    <div class="accordion-item">
+
+
+
+                                        <div id="collapse-test" class="accordion-collapse collapse" aria-labelledby="heading-test" data-bs-parent="#videoAccordion">
+                                            <div class="accordion-body">
+                                                <video controls class="w-100">
+                                                    <source src="/Videos/Courses/2.mp4">
+                                                    مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند.
+                                                </video>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @foreach (var video in Course.Videos.Select((v, index) => new { Video = v, Index = index }))
+                                    {
+
+                                        <div class="accordion-item">
+
+                                            <h2 class="accordion-header" id="heading-@video.Index">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@video.Index" aria-expanded="false" aria-controls="collapse-@video.Index">
+                                                    <strong>@video.Video.Title</strong>
+                                                </button>
+                                            </h2>
+
+                                            <div id="collapse-@video.Index" class="accordion-collapse collapse" aria-labelledby="heading-@video.Index" data-bs-parent="#videoAccordion">
+                                                <div class="accordion-body">
+                                                    <div class="embed-responsive embed-responsive-16by9">
+                                                        <video controls class="embed-responsive-item w-100">
+                                                            <source src="/Videos/Courses/@video.Video.VideoUrl" type="video/mp4">
+                                                            مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند.
+                                                        </video>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                    }
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                    }
+
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+
+    }
+
+
+
+}
+
+
+<CourseAddedModal @ref="myModal" Title="" ShowCloseButton="true" ShowSaveButton="true" OnSave="(()=>OnModalSave())">
+    <p> دوره موردنظر به سبدخرید شما اضافه شد</p>
+</CourseAddedModal>
+
+@code {
+
+    #region
+
+    [Inject] IUserService UserService { get; set; }
+    [Inject] ICourseService CourseService { get; set; }
+    [Inject] IOrderService OrderService { get; set; }
+    [Inject] IClient Client { get; set; }
+
+    [Inject] NavigationManager Navmanger { get; set; }
+    [Inject] ApiAuthenticationStateProvider apiAuthenticationStateProvider { get; set; }
+
+    [Parameter]
+    public int CourseId { get; set; }
+
+    CourseReadonlyDTO Course;
+    private string userid;
+
+    private bool IsBuyed = false;
+    private bool wait = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        wait = true;
+        try
+        {
+            var response = await CourseService.GetCourseById(CourseId);
+            Course = response.Data;
+
+
+
+            AuthenticationState authState = await apiAuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user?.Identity?.IsAuthenticated == true)
+            {
+                string userId = user.Claims.FirstOrDefault(c => c.Type == "nameid")?.Value;
+
+                if (!string.IsNullOrEmpty(userId))
+                {
+
+
+                    userid = user.Claims.FirstOrDefault(c => c.Type == "nameid")?.Value;
+
+                    var resp = await UserService.CourseIsBuyed(Convert.ToInt32(userid), Course.Id);
+                    IsBuyed = resp.Data;
+
+
+                }
+                else
+                {
+                    // مدیریت خطا در صورت عدم یافتن userId
+                }
+            }
+        }
+        catch
+        {
+
+
+        }
+        finally
+        {
+            wait = false;
+        }
+
+
+    }
+
+
+    private async Task AddCourseToCart()
+    {
+
+        wait = true;
+
+        try
+        {
+
+            AuthenticationState authState = await apiAuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user?.Identity?.IsAuthenticated == true)
+            {
+                string userId = user.Claims.FirstOrDefault(c => c.Type == "nameid")?.Value;
+
+                if (!string.IsNullOrEmpty(userId))
+                {
+
+                    var response = await OrderService.AddCourseToCart(int.Parse(userId), Course.Id);
+
+
+                    if (response.Data)
+                    {
+                        // عملیات موفقیت‌آمیز
+                        ShowModal();
+                    }
+                    else
+                    {
+                        // مدیریت خطا در صورت عدم موفقیت
+                    }
+                }
+                else
+                {
+
+                    // مدیریت خطا در صورت عدم احراز هویت
+                    Navmanger.NavigateTo("/LogIn");
+                }
+            }
+            else
+            {
+                // مدیریت خطا در صورت عدم احراز هویت
+                Navmanger.NavigateTo("/LogIn");
+            }
+
+        }
+        catch
+        {
+
+
+        }
+        finally
+        {
+            wait = false;
+
+        }
+
+
+    }
+    #endregion
+
+
+
+    #region Modal
+
+    //Modal
+    private CourseAddedModal myModal;
+
+    private void ShowModal()
+    {
+        myModal.Open();
+    }
+
+    private void OnModalClose()
+    {
+        myModal.Close();
+    }
+
+    private async void OnModalSave()
+    {
+        Navmanger.NavigateTo("/Cart");
+
+    }
+
+    #endregion
+}
+

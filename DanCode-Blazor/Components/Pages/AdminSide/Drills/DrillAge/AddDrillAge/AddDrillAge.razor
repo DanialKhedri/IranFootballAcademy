@@ -1,0 +1,175 @@
+﻿@page "/AdminSide/AddDrillAge"
+@using DanCode_Blazor.Components.Layout
+@using DanCode_Blazor.Services.Base.interfaces
+@rendermode InteractiveServer
+@layout AdminPanelLayout;
+
+<PageTitle>Add Drill Age</PageTitle>
+
+<style>
+    .divbackground {
+        background-color: #0b6131 !important;
+        color: white;
+    }
+
+    .formbackground {
+        background-color: #F7F9F2 !important;
+    }
+
+    .form-label {
+        /*     background-color: #0b6131;
+                    color: white; */
+        padding: 5px 10px;
+        border-radius: 3px;
+        display: inline-block;
+        width: 100%;
+        text-align: left;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .form-control, .form-control-file {
+        border: 1px solid #0b6131;
+        border-radius: 5px;
+        box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+
+        .form-control:focus, .form-control-file:focus {
+            border-color: #0b6131;
+            box-shadow: 0 0 8px rgba(11, 97, 49, 0.8);
+        }
+
+    .btn-custom {
+        background-color: #0b6131 !important;
+        color: white !important;
+    }
+
+        .btn-custom:hover {
+            background-color: #094d23 !important;
+        }
+</style>
+
+
+<div class="containre mt-4">
+
+    <div>
+        <h2 class="text-center m-2 p-3 divbackground rounded">Add Drill Age</h2>
+        <hr />
+    </div>
+
+    <div class="card p-4 mb-4 formbackground">
+
+
+
+        <EditForm Model="drillagedto" OnValidSubmit="adddrillage">
+
+            <DataAnnotationsValidator></DataAnnotationsValidator>
+            <ValidationSummary></ValidationSummary>
+
+
+            <!--Unique Name-->
+            <div class="form-group mb-3">
+
+                <label>DrillType UniqueName</label>
+                <input class="form-control"
+                       placeholder="Enter UniqueName of DrillType ex: Possesion"
+                       @bind-value="drillagedto.Age">
+
+            </div>
+
+            <!--Description-->
+            <div class="form-group mb-3">
+                <label>Description</label>
+                <input class="form-control" placeholder="Enter Description of drillage"
+                       @bind-value="drillagedto.Description"></input>
+            </div>
+
+            <!--Submit btn-->
+            <div class="py-3 my-3 text-center">
+                <Button Class="btn divbackground" Type="ButtonType.Submit">Add Drill </Button>
+            </div>
+            <hr />
+
+
+        </EditForm>
+
+
+
+
+    </div>
+
+
+    @if (Message != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @Message
+        </div>
+    }
+
+    @if (isCopying)
+    {
+        <div class="text-center mt-4">
+            <h2>Please Wait...</h2>
+        </div>
+    }
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+@code {
+
+
+    [Inject] IDrillService DrillService { get; set; }
+    [Inject] NavigationManager navmanger { get; set; }
+
+    AddDrillAgeReadDTO drillagedto = new AddDrillAgeReadDTO();
+    string? Message;
+    private bool isCopying = false;
+
+    public async Task adddrillage()
+    {
+        isCopying = true;
+        StateHasChanged();
+        try
+        {
+
+            var Result = await DrillService.AddDrillAge(drillagedto);
+
+            if (Result.Data == false)
+                Message = "Error";
+
+            if (Result.Data == true)
+                Message = "DrillAge Added";
+
+        }
+        catch
+        {
+
+            Message = "Error";
+        }
+        finally
+        {
+
+            isCopying =false;
+            StateHasChanged();
+        }
+
+     
+
+
+
+
+    }
+
+}

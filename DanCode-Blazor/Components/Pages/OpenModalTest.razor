@@ -1,0 +1,29 @@
+﻿@page "/testm"
+
+<h3>Blazor Modal Example</h3>
+<button class="btn btn-primary" @onclick="ShowModal">Open Modal</button>
+
+<TestModal @ref="myModal" Title="Sample Modal" ShowCloseButton="true" ShowSaveButton="true" OnClose="OnModalClose" OnSave="OnModalSave">
+    <p>Here is some content inside the modal body!</p>
+</TestModal>
+
+@code {
+    private TestModal myModal;
+
+    private void ShowModal()
+    {
+        myModal.Open();
+    }
+
+    private void OnModalClose()
+    {
+        // Handle modal close event here
+        Console.WriteLine("Modal closed!");
+    }
+
+    private void OnModalSave()
+    {
+        // Handle modal save event here
+        Console.WriteLine("Modal saved!");
+    }
+}
