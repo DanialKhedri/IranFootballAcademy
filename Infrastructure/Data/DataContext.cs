@@ -15,6 +15,7 @@ using Domain.Entities.Drill.DrillType;
 using Domain.Entities.Course;
 using Domain.Entities;
 using Domain.Entities.Payment;
+using Domain.Entities.Article;
 #endregion
 
 namespace Infrastructure.Data;
@@ -94,12 +95,13 @@ public class DataContext : DbContext
     #endregion
 
 
+    #region  Article
 
-
+    public DbSet<Article> Articles { get; set; }
 
     #endregion
 
 
-
+    #endregion
 
 }
