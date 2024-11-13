@@ -32,6 +32,10 @@ using Domain.IRepository.Payment;
 using Infrastructure.Repository.Payment;
 using Application.Services.Interface.Payment;
 using Application.Services.Implement.Payment;
+using Application.Services.Interface.Artic;
+using Domain.IRepository.Article;
+using Infrastructure.Repository.Article;
+using Application.Services.Implement.Artic;
 #endregion
 
 #region Services
@@ -74,6 +78,11 @@ builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 //Payment
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+
+//Article
+builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
+builder.Services.AddScoped<IArticleService, ArticleService>();
+
 
 //Serilog
 builder.Host.UseSerilog((ctx, lc) =>

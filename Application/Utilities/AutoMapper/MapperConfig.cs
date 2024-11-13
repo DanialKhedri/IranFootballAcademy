@@ -27,6 +27,10 @@ using Application.DTOs.Order.OrderDetailDTO;
 using Domain.Entities.Order.OrderDetail;
 using Domain.Entities.Payment;
 using Application.DTOs.Payment;
+using Domain.Entities.Article;
+using Application.DTOs.Article.AddDTO;
+using Application.DTOs.Article.EditDTO;
+using Application.DTOs.Article.ReadonlyDTO;
 #endregion
 
 namespace Application.Utilities.AutoMapper;
@@ -79,6 +83,16 @@ public class MapperConfig : Profile
         //Payment
 
         CreateMap<Payment, PaymentDTO>().ReverseMap();
+
+        //Article
+
+        CreateMap<Article, ArticleAddDTO>().ReverseMap();
+        CreateMap<Article, ArticleEditDTO>().ReverseMap();
+        CreateMap<Article,ArticleReadonlyDTO>().ReverseMap();
+
+
+
+
     }
 
 

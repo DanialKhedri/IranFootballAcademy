@@ -9,10 +9,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Domain.Entities.Article;
+using Domain.IRepository.Article;
 
 namespace Infrastructure.Repository.Article;
 
-public class ArticleRepository
+public class ArticleRepository : IArticleRepository
 {
 
     #region Ctor

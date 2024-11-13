@@ -1,6 +1,7 @@
 ﻿using Application.DTOs.Article.AddDTO;
 using Application.DTOs.Article.EditDTO;
 using Application.DTOs.Article.ReadonlyDTO;
+using Application.Services.Interface.Artic;
 using AutoMapper;
 using Domain.Entities.Article;
 using Domain.IRepository.Article;
@@ -13,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Application.Services.Implement.Artic;
 
-public class ArticleService
+public class ArticleService : IArticleService
 {
 
 
@@ -84,9 +85,20 @@ public class ArticleService
             return false;
 
 
-        var temp = _mapper.Map<Article>(dto);
+        //var temp = _mapper.Map<Article>(dto);
 
-        var result = await _ArticleRepository.AddArticle(temp);
+
+        Article article = new Article
+        {
+
+            Author = dto.Author,
+            Content = dto.Content,
+            Title = dto.Title,
+            ImageURL = dto.ImageURL,
+            
+        };
+
+        var result = await _ArticleRepository.AddArticle(article);
 
         return result;
 

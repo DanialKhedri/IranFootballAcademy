@@ -1,0 +1,252 @@
+﻿@page "/AdminSide/AddArticle"
+@using Application.Extensions.Generators.NameGenerator
+@using DanCode_Blazor.Components.Layout
+@using DanCode_Blazor.Components.Pages.Utilites
+@using DanCode_Blazor.Providers
+@using DanCode_Blazor.Services.Base.interfaces
+@using System.Security.Claims
+@using global::Services.Base.interfaces
+@rendermode InteractiveServer
+@layout AdminPanelLayout;
+
+<PageTitle>Add Article</PageTitle>
+
+<style>
+    .divbackground {
+        background-color: #0b6131 !important;
+        color: white;
+    }
+
+    .formbackground {
+        background-color: #F7F9F2 !important;
+    }
+
+    .form-label {
+        background-color: #0b6131;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 3px;
+        display: inline-block;
+        width: 100%;
+        text-align: left;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .form-control, .form-control-file {
+        border: 1px solid #0b6131;
+        border-radius: 5px;
+        box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+
+        .form-control:focus, .form-control-file:focus {
+            border-color: #0b6131;
+            box-shadow: 0 0 8px rgba(11, 97, 49, 0.8);
+        }
+
+    .btn-custom {
+        background-color: #0b6131 !important;
+        color: white !important;
+    }
+
+        .btn-custom:hover {
+            background-color: #094d23 !important;
+        }
+</style>
+
+
+<div class="container mt-4">
+
+    <div>
+        <h2 class="text-center m-2 p-3 divbackground rounded">Add Article</h2>
+        <hr />
+    </div>
+
+    <div class="card p-4 mb-4 formbackground">
+
+        <EditForm Model="@ArticleDto" OnValidSubmit="@SendData">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <!-- Author -->
+            <div class="form-group mb-3">
+                <label class="form-label">Author</label>
+                <InputText class="form-control"
+                           placeholder="Enter Author of This Article ex: Danial Khedri"
+                           @bind-Value="ArticleDto.Author" />
+                <ValidationMessage For="(() => ArticleDto.Author)" />
+            </div>
+            <hr />
+
+
+            <!-- Title -->
+            <div class="form-group mb-3">
+                <label class="form-label">Title</label>
+                <InputText class="form-control"
+                           placeholder="Enter Title of Course ex: 1v1 Competition"
+                           @bind-Value="ArticleDto.Title" />
+                <ValidationMessage For="(() => ArticleDto.Title)" />
+            </div>
+            <hr />
+
+
+            <!-- Content -->
+            <div class="form-group mb-3">
+                <label class="form-label">Description</label>
+                <InputTextArea class="form-control"
+                               placeholder="Enter Description of Course"
+                               @bind-Value="ArticleDto.Content" />
+                <ValidationMessage For="(() => ArticleDto.Content)" />
+            </div>
+            <hr />
+
+       
+
+            <!-- Image -->
+            <div class="form-group mb-3">
+                <label class="form-label">Select Image</label>
+                <InputFile OnChange="HandleSelectedFiles" class="form-control-file" />
+                @if (!string.IsNullOrEmpty(imageDataUrl))
+                {
+                    <img class="img-fluid p-3" src="@imageDataUrl" alt="Selected Image" />
+                }
+            </div>
+            <hr />
+
+           
+           
+
+            <!-- Submit Button -->
+            <div class="text-center">
+                <button class="btn btn-custom" type="submit">Add Article</button>
+            </div>
+
+
+        </EditForm>
+
+
+        @if (IsWait)
+        {
+            <div class="text-center mt-4">
+                <DanCode_Blazor.Components.Pages.Utilites.LoadingSpinner></DanCode_Blazor.Components.Pages.Utilites.LoadingSpinner>
+                <h2>Please Wait...</h2>
+            </div>
+        }
+
+    </div>
+</div>
+
+
+
+<CourseAddedModal @ref="myModal" Title="@Message" ShowCloseButton="true" ShowSaveButton="false">
+
+</CourseAddedModal>
+
+
+
+@code {
+
+    #region Injects
+    [Inject] IArticleService ArticleService { get; set; }
+    [Inject] NavigationManager NavManager { get; set; }
+    [Inject] IUserService UserService { get; set; }
+    [Inject] ApiAuthenticationStateProvider apiAuthenticationStateProvider { get; set; }
+    #endregion
+
+    #region Variables
+
+    private bool IsWait = false;
+    private string Message = "";
+
+    private string imageDataUrl;
+    private IBrowserFile ImageFormFile { get; set; }
+    private ArticleAddDTO ArticleDto = new();
+
+    #endregion
+
+
+
+    private async Task HandleSelectedFiles(InputFileChangeEventArgs e)
+    {
+        ImageFormFile = e.File;
+        if (ImageFormFile != null)
+        {
+            using var memoryStream = new MemoryStream();
+            await ImageFormFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).CopyToAsync(memoryStream);
+            imageDataUrl = $"data:{ImageFormFile.ContentType};base64,{Convert.ToBase64String(memoryStream.ToArray())}";
+        }
+    }
+
+    private async Task SendData()
+    {
+
+        IsWait = true;
+
+        try
+        {
+            // Add Image
+            if (ImageFormFile != null)
+            {
+                ArticleDto.ImageURL = NameGenerator.GenerateUniqCode() + Path.GetExtension(ImageFormFile.Name);
+                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Images/Courses", ArticleDto.ImageURL);
+                await SaveFileAsync(ImageFormFile, imagePath);
+            }
+
+         
+
+            var response = await ArticleService.AddArticle(ArticleDto);
+            Message = response.Data ? "Article Added Successfully" : "Error Adding Article";
+
+            ShowModal();
+        }
+        catch
+        {
+
+
+        }
+        finally
+        {
+
+            StateHasChanged();
+            IsWait = false;
+
+        }
+
+
+
+    }
+
+    private async Task SaveFileAsync(IBrowserFile file, string filePath)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+        using var stream = file.OpenReadStream(900 * 1024 * 1024); // Limit to 900 MB
+        using var fileStream = new FileStream(filePath, FileMode.Create);
+        await stream.CopyToAsync(fileStream);
+    }
+
+
+ 
+
+
+    #region Modal
+
+    //Modal
+    private CourseAddedModal myModal;
+
+    private void ShowModal()
+    {
+        myModal.Open();
+    }
+
+    private void OnModalClose()
+    {
+
+        NavManager.NavigateTo("AdminSide/GetAllArticles");
+    }
+
+
+    #endregion
+
+}

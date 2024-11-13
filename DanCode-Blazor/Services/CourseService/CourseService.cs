@@ -29,8 +29,6 @@ public class CourseService : BaseHttpService, ICourseService
 
         try
         {
-
-
             var data = await client.GetAllCoursesAsync();
 
 

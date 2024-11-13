@@ -4,6 +4,7 @@ using Blazored.LocalStorage;
 using DanCode_Blazor;
 using DanCode_Blazor.Components;
 using DanCode_Blazor.Providers;
+using DanCode_Blazor.Services.ArticleService;
 using DanCode_Blazor.Services.Authentication;
 using DanCode_Blazor.Services.Base;
 using DanCode_Blazor.Services.Base.interfaces;
@@ -53,7 +54,7 @@ builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
-
+builder.Services.AddScoped<IArticleService, ArticlesService>();
 
 
 builder.Services.AddScoped<ApiAuthenticationStateProvider>();
