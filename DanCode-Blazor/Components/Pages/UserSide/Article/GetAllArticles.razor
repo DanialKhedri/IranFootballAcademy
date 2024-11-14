@@ -1,10 +1,13 @@
-﻿@page "/Courses"
+﻿
+@page "/Articles"
 @using DanCode_Blazor.Components.Pages.Utilites
+@using DanCode_Blazor.Services.Base.interfaces
 @rendermode InteractiveServer
 
 
-<PageTitle>  دوره ها | آکادمی فوتبال ایران</PageTitle>
-<title> دوره ها | آکادمی فوتبال ایران</title>
+<PageTitle>  مقالات | آکادمی فوتبال ایران</PageTitle>
+<title> مقالات | آکادمی فوتبال ایران</title>
+
 
 <style>
     .divbackground {
@@ -35,7 +38,7 @@
 </style>
 
 <div class="divbackground mt-3">
-    <h2>دوره های علمی آکادمی</h2>
+    <h2>مقالات </h2>
 </div>
 
 <hr />
@@ -54,35 +57,39 @@ else
 
         <div class="row no-gutters">
             <!-- استفاده از no-gutters برای حذف فاصله‌های اضافی -->
-
-            @if (Courses == null || Courses.Count == 0)
+            @if (Articles == null || Articles.Count == 0)
             {
-            
+
                 <div class="text-center">
-                    هیچ دوره ای برای نمایش وجود ندارد
+
+                    هیچ مقاله ای برای نمایش وجود ندارد
+
                 </div>
             }
-
-            @foreach (var item in Courses)
+            else
             {
-                <div class="col-12 course-card card mb-3" @onclick="(()=> GotoCourseById(item.Id))">
+                @foreach (var item in Articles)
+                {
+                    <div class="col-12 course-card card mb-3" @onclick="(()=> GotoArticleById(item.Id))">
 
-                    <div class="row no-gutters">
-                        <!-- حذف فاصله‌های اضافی بین ستون‌ها -->
+                        <div class="row no-gutters">
+                            <!-- حذف فاصله‌های اضافی بین ستون‌ها -->
 
-                        <div class="col-md-4">
-                            <img src="/Images/Courses/@item.ImageUrl" class="img-fluid rounded-start" alt="Image">
-                        </div>
-
-                        <div class="col-md-8">
-                            <div class="card-body">
-                                <h5 class="card-title">@item.Title</h5>
+                            <div class="col-md-4">
+                                <img src="/Images/Articles/@item.ImageURL" class="img-fluid rounded-start" alt="Image">
                             </div>
+
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">@item.Title</h5>
+                                </div>
+                            </div>
+
                         </div>
 
                     </div>
 
-                </div>
+                }
 
             }
         </div>
@@ -93,42 +100,50 @@ else
 
 @code {
 
-    [Inject] IClient Client { get; set; }
+    [Inject] IArticleService articleService { get; set; }
     [Inject] NavigationManager Navmanger { get; set; }
 
+    ICollection<ArticleReadonlyDTO> Articles { get; set; }
 
-
-
-    ICollection<CourseReadonlyDTO> Courses;
-
-
+    private string? Message;
     private bool IsWait = false;
 
     protected override async Task OnInitializedAsync()
     {
 
         IsWait = true;
-
         try
         {
-            Courses = await Client.GetAllCoursesAsync();
+
+            var response = await articleService.GetAllArticles();
+
+
+            if (response.Success)
+                Articles = response.Data;
+
+            else
+                Message = response.Message;
+
+
 
         }
         catch
         {
 
-
+            Message = "Error";
         }
         finally
         {
 
             IsWait = false;
+        };
 
-        }
+
     }
 
-    private async Task GotoCourseById(int CourseId)
+    private async Task GotoArticleById(int Id)
     {
-        Navmanger.NavigateTo($"/Courses/{CourseId}");
+        Navmanger.NavigateTo($"/Article/{Id}");
     }
+
 }

@@ -1,0 +1,245 @@
+﻿@page "/Article/{ArticleId:int}"
+@using DanCode_Blazor.Components.Pages.Utilites
+@using DanCode_Blazor.Providers
+@using DanCode_Blazor.Services.Base.interfaces
+@using DanCode_Blazor.Services.CourseService
+@using global::Services.Base.interfaces
+
+
+
+<style>
+
+
+    .btn-custom {
+        background-color: #0b6131 !important;
+        color: white !important;
+        border: 2px solid transparent;
+        padding: 10px 20px;
+        border-radius: 5px;
+        transition: all 0.3s ease; /* اضافه کردن ترانزیشن برای تغییرات نرم‌تر */
+    }
+
+
+        .btn-custom:hover {
+            background-color: #094d23 !important; /* تغییر رنگ پس‌زمینه */
+            color: #fff !important; /* حفظ رنگ متن */
+            border-color: #0b6131; /* اضافه کردن حاشیه */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* اضافه کردن سایه برای عمق */
+            transform: translateY(-3px); /* اضافه کردن افکت شناور به دکمه */
+        }
+
+    .larg-bold {
+        font-size: 21px;
+        font-weight: 400;
+    }
+
+
+    /* اضافه کردن فونت "Vazir" */
+    َ@@import url('https://fonts.googleapis.com/css2?family=Vazir:wght@400;500;700&display=swap');
+
+
+    body {
+        font-family: 'Vazir', sans-serif;
+        overflow-x: hidden; /* جلوگیری از اسکرول افقی */
+    }
+
+    .divbackground {
+        background-color: #0b6131 !important;
+        color: white;
+        padding: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .course-card {
+        border: 1px solid #ddd; /* Light border color for card */
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        background: white;
+        margin-bottom: 20px;
+        padding: 20px; /* Padding inside the card */
+        transition: transform 0.3s ease;
+        position: relative; /* Required for pseudo-element positioning */
+    }
+
+        .course-card img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+
+        .course-card .card-body {
+            padding: 20px;
+        }
+
+
+        .course-card:hover {
+            transform: scale(1.02);
+        }
+
+
+        .course-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 2px solid #0b6131; /* Darker green border */
+            border-radius: 10px;
+            pointer-events: none; /* Make sure the border doesn't interfere with interactions */
+        }
+
+
+    .card-title {
+        font-size: 1.75rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+
+    .card-text {
+        font-size: 1.5rem; /* Increased font size */
+        line-height: 1.6; /* Increased line height for better readability */
+        margin-bottom: 15px;
+    }
+
+    .text-muted {
+        font-size: 1.125rem;
+        color: #6c757d;
+    }
+
+    .highlight-box {
+        background-color: #d4edda;
+        border: 2px solid #c3e6cb;
+        border-radius: 5px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .highlight-title {
+        font-size: 1.75rem;
+        font-weight: bold;
+        color: #155724;
+        margin-bottom: 15px;
+    }
+
+    .highlight-box p {
+        font-size: 1.5rem; /* Increased font size */
+        line-height: 1.6; /* Increased line height for better readability */
+    }
+
+        .highlight-box p strong {
+            font-weight: bold;
+        }
+
+</style>
+
+
+
+@if (wait)
+{
+    <LoadingSpinner></LoadingSpinner>
+}
+    else
+    {
+
+        <PageTitle>@Article.Title | آکادمی فوتبال ایران</PageTitle>
+        <title>@Article.Title | آکادمی فوتبال ایران</title>
+
+        <div class="divbackground mt-3">
+
+            <h1>@Article.Title</h1>
+
+        </div>
+
+        <div class="container-md">
+
+            <div class="course-card">
+
+                <img class="p-2" src="/Images/Articles/@Article.ImageURL" />
+
+                <div class="card-body">
+
+                    <h3 class="card-title">@Article.Title</h3>
+                    <hr />
+
+                    <p class="larg-bold" style="white-space: pre-line;">
+                        @Article.Content
+                    </p>
+
+                    <hr />
+
+              
+
+
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+
+    }
+
+
+
+
+
+
+
+@code {
+
+    #region
+
+    [Inject] IArticleService ArticleService { get; set; }
+
+    [Inject] NavigationManager Navmanger { get; set; }
+    [Inject] ApiAuthenticationStateProvider apiAuthenticationStateProvider { get; set; }
+
+    [Parameter]
+    public int ArticleId { get; set; }
+
+    ArticleReadonlyDTO Article = new();
+
+    private bool wait = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        wait = true;
+        try
+        {
+            var response = await ArticleService.GetArticleById(ArticleId);
+            Article = response.Data;
+
+        
+        }
+        catch
+        {
+
+
+        }
+        finally
+        {
+            wait = false;
+        }
+
+
+    }
+
+
+    #endregion
+
+
+
+   
+}
+

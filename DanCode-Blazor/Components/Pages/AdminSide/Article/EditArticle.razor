@@ -298,7 +298,7 @@
             // Delete old image if exists
             if (!string.IsNullOrEmpty(ArticleDTO.ImageURL))
             {
-                var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Images/Courses", ArticleDTO.ImageURL);
+                var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Images/Articles", ArticleDTO.ImageURL);
                 if (File.Exists(oldImagePath))
                 {
                     File.Delete(oldImagePath);
@@ -307,7 +307,7 @@
 
             // Save new image
             ArticleDTO.ImageURL = NameGenerator.GenerateUniqCode() + Path.GetExtension(ImageFormFile.Name);
-            string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Images/Courses", ArticleDTO.ImageURL);
+            string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Images/Articles", ArticleDTO.ImageURL);
             using (var stream = ImageFormFile.OpenReadStream())
             {
                 using (var fileStream = new FileStream(imagePath, FileMode.Create))

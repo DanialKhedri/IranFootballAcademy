@@ -190,7 +190,7 @@
             if (ImageFormFile != null)
             {
                 ArticleDto.ImageURL = NameGenerator.GenerateUniqCode() + Path.GetExtension(ImageFormFile.Name);
-                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Images/Courses", ArticleDto.ImageURL);
+                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Images/Articles", ArticleDto.ImageURL);
                 await SaveFileAsync(ImageFormFile, imagePath);
             }
 
