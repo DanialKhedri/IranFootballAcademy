@@ -176,60 +176,12 @@
     </div>
 </div>
 
-<hr />
-@* <!--Courses-->
-<div class="container carousel">
-    <div id="carouselExampleIndicators" class="carousel slide carousel-fade" data-bs-ride="carousel">
 
-        <ol class="carousel-indicators">
-            <li data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active"></li>
-            <li data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"></li>
-            <li data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2"></li>
-        </ol>
-
-        <div class="carousel-inner">
-            @if (courseReadonlyDTOs == null || courseReadonlyDTOs.Count == 0)
-            {
-                <LoadingSpinner></LoadingSpinner>
-            }
-            else
-            {
-                @foreach (var item in courseReadonlyDTOs)
-                {
-
-                    <div @onclick="() => GoToCourse(item.Id)" class="carousel-item">
-
-
-                        <img class="d-block w-100" src="/Images/Site/wp8255680-football-4k-wallpapers.jpg" alt="Third slide">
-
-
-
-
-                    </div>
-
-                }
-            }
-
-
-        </div>
-
-        <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-bs-slide="next">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-        </a>
-
-        <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-bs-slide="prev">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-        </a>
-    </div>
-</div>
-<hr /> *@
 
 
 <!--Features-->
 <div class="container">
-
+    <hr/>
     <h2 class=" pb-2 border-bottom text-center">خدمات ما</h2>
 
     <div class="row g-4 py-5">

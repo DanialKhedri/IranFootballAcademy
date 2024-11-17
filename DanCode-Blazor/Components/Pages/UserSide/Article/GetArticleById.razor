@@ -1,4 +1,5 @@
 ﻿@page "/Article/{ArticleId:int}"
+
 @using DanCode_Blazor.Components.Pages.Utilites
 @using DanCode_Blazor.Providers
 @using DanCode_Blazor.Services.Base.interfaces
@@ -166,6 +167,12 @@
                 <div class="card-body">
 
                     <h3 class="card-title">@Article.Title</h3>
+                <div>
+                    <label>@Article.Author</label>
+                </div>
+                <div>
+                    <label>@Article.PublishDate</label>
+                </div>
                     <hr />
 
                     <p class="larg-bold" style="white-space: pre-line;">
@@ -189,10 +196,6 @@
 
 
     }
-
-
-
-
 
 
 
