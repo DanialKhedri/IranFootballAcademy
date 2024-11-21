@@ -49,8 +49,15 @@ public class ProductController : ControllerBase
     public async Task<ActionResult<ProductReadOnlyDTO>> GetProductById(int ProductId)
     {
 
+        if (ProductId <= 0)
+            return BadRequest();
+
         var productdto = await _productService.GetProductById(ProductId);
-        return productdto;
+
+        if (productdto == null)
+            return BadRequest();
+
+        return Ok(productdto);
 
     }
 
@@ -188,7 +195,7 @@ public class ProductController : ControllerBase
         // گرفتن محصولات خریداری شده از سرویس
         var products = await _productService.GetBuyedProductsByUserId(UserId);
 
-   
+
 
         // بازگرداندن لیست محصولات با وضعیت 200 OK
         return Ok(products);
