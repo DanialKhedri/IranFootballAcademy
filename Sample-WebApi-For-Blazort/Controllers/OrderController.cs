@@ -103,7 +103,7 @@ public class OrderController : ControllerBase
     //Finalize Order 
     [Authorize]
     [HttpPost("[Action]")]
-    public async Task<ActionResult<bool>> FinalizeOrder(int OrderId, int UserId)
+    public async Task<ActionResult<bool>> FinalizeOrder(int OrderId)
     {
         return await _orderService.FinalizeOrder(OrderId);
     }
